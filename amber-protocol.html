@@ -1,0 +1,1568 @@
+<title>Amber Protocol</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Chivo:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* ============================================================
+   AMBER PROTOCOL — dark-adapted cognitive console
+   Dark is the primary world; light is a designed daylight variant.
+   ============================================================ */
+:root{
+  --ground:#111419;
+  --panel:#1A1E27;
+  --inset:#222733;
+  --line:#2C323F;
+  --line-soft:#232834;
+  --text:#E5E8EF;
+  --dim:#8A929F;
+  --faint:#5E6673;
+
+  --amber:#F0A93B;
+  --amber-deep:#C88A22;
+  --amber-wash:rgba(240,169,59,.10);
+  --amber-glow:rgba(240,169,59,.28);
+
+  --cool:#7FA6D8;
+  --cool-wash:rgba(127,166,216,.12);
+  --cool-glow:rgba(127,166,216,.24);
+
+  --go:#5FCBA0;
+  --no:#E07461;
+
+  --sr:#E3574C; --sb:#5A93E3; --sg:#46B983; --sy:#DFAF2B;
+
+  --on-amber:#111419;
+  --lift:0 18px 44px -26px rgba(0,0,0,.85);
+  --hair:1px solid var(--line);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --ground:#EBEEF4;
+    --panel:#FFFFFF;
+    --inset:#E6EAF2;
+    --line:#D2D9E5;
+    --line-soft:#E2E7EF;
+    --text:#191E26;
+    --dim:#5C6575;
+    --faint:#8A93A2;
+
+    --amber:#96590A;
+    --amber-deep:#734305;
+    --amber-wash:rgba(150,89,10,.08);
+    --amber-glow:rgba(150,89,10,.20);
+
+    --cool:#39699F;
+    --cool-wash:rgba(57,105,159,.09);
+    --cool-glow:rgba(57,105,159,.18);
+
+    --go:#137A56;
+    --no:#B93F2D;
+
+    --sr:#C5352A; --sb:#2760B4; --sg:#1A7F52; --sy:#8E6903;
+
+    --on-amber:#FFFFFF;
+    --lift:0 16px 36px -28px rgba(24,32,48,.45);
+  }
+}
+:root[data-theme="light"]{
+  --ground:#EBEEF4; --panel:#FFFFFF; --inset:#E6EAF2; --line:#D2D9E5; --line-soft:#E2E7EF;
+  --text:#191E26; --dim:#5C6575; --faint:#8A93A2;
+  --amber:#96590A; --amber-deep:#734305; --amber-wash:rgba(150,89,10,.08); --amber-glow:rgba(150,89,10,.20);
+  --cool:#39699F; --cool-wash:rgba(57,105,159,.09); --cool-glow:rgba(57,105,159,.18);
+  --go:#137A56; --no:#B93F2D;
+  --sr:#C5352A; --sb:#2760B4; --sg:#1A7F52; --sy:#8E6903;
+  --on-amber:#FFFFFF;
+  --lift:0 16px 36px -28px rgba(24,32,48,.45);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--text);
+  font-family:"Chivo","Helvetica Neue",Arial,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  min-height:100dvh;
+  display:grid;
+  place-items:center;
+  padding:clamp(10px,2.4vw,28px);
+}
+/* faint dark-adapted vignette so the panel sits in a room, not on a slab */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(120% 90% at 50% 0%,var(--amber-wash),transparent 62%);
+}
+
+.console{
+  position:relative;z-index:1;
+  width:min(840px,100%);
+  background:var(--panel);
+  border:var(--hair);
+  border-radius:4px;
+  box-shadow:var(--lift);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* ---------- top rail ---------- */
+.rail{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:16px;
+  padding:14px 18px;
+  border-bottom:var(--hair);
+  background:linear-gradient(var(--amber-wash),transparent);
+}
+.rail-l{min-width:0}
+.rail-r{min-width:0;text-align:right}
+.eyebrow{
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--faint);font-weight:500;
+}
+.rail-name{
+  font-family:"Newsreader",Georgia,serif;
+  font-size:19px;font-weight:500;letter-spacing:-.01em;
+  line-height:1.2;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rail-metric{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:17px;font-weight:500;font-variant-numeric:tabular-nums;
+  margin-top:2px;line-height:1.2;
+}
+.rail-metric .unit{font-size:11px;color:var(--dim);margin-left:2px}
+.rail-metric .delta{font-size:11px;margin-left:6px}
+.delta.warm{color:var(--go)}
+.delta.cold{color:var(--no)}
+
+.clock{position:relative;width:58px;height:58px;flex:none}
+.clock svg{display:block;transform:rotate(-90deg)}
+.clock-track{stroke:var(--inset)}
+.clock-arc{stroke:var(--amber);transition:stroke-dashoffset .3s linear,stroke .4s ease}
+.clock.cool .clock-arc{stroke:var(--cool)}
+.clock-time{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:12px;font-weight:500;font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;
+}
+
+/* ---------- stage ---------- */
+.stage{
+  position:relative;
+  padding:22px 18px 24px;
+  min-height:404px;
+  display:flex;flex-direction:column;
+}
+.stage::after{ /* feedback edge — never the only signal */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  border:2px solid transparent;opacity:0;transition:opacity .16s ease;
+}
+.stage.fb-go::after{border-color:var(--go);opacity:.55}
+.stage.fb-no::after{border-color:var(--no);opacity:.55}
+
+/* ---------- keyline footer ---------- */
+.keyline{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 18px;border-top:var(--hair);
+  background:var(--inset);
+  font-size:11.5px;color:var(--dim);
+  min-height:40px;flex-wrap:wrap;
+}
+.keys{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+kbd{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:10.5px;font-weight:500;
+  padding:2px 6px;border-radius:3px;
+  background:var(--panel);border:1px solid var(--line);
+  color:var(--text);
+}
+.keyline .sep{color:var(--faint)}
+
+/* ---------- shared bits ---------- */
+.lede{
+  font-family:"Newsreader",Georgia,serif;
+  font-size:27px;line-height:1.24;font-weight:400;letter-spacing:-.015em;
+  text-wrap:balance;max-width:30ch;
+}
+.sub{color:var(--dim);font-size:13.5px;max-width:58ch;margin-top:9px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:10px 18px;border-radius:3px;
+  background:var(--amber);color:var(--on-amber);
+  font-weight:700;font-size:13.5px;letter-spacing:.01em;
+  border:1px solid var(--amber);
+  transition:filter .15s ease,transform .1s ease;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn-ghost{
+  background:none;color:var(--dim);border:1px solid var(--line);
+  font-weight:500;padding:9px 14px;font-size:12.5px;
+}
+.btn-ghost:hover{color:var(--text);border-color:var(--faint);filter:none}
+
+/* =========================================================
+   REST VIEW — the protocol itself
+   ========================================================= */
+.rest{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;flex:1;align-items:start}
+.rest-run{display:flex;flex-direction:column;gap:18px}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden;width:max-content}
+.seg button{
+  padding:7px 13px;font-size:12px;color:var(--dim);font-weight:500;
+  border-right:1px solid var(--line);
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+}
+.seg button:last-child{border-right:none}
+.seg button[aria-pressed="true"]{background:var(--amber-wash);color:var(--amber);font-weight:700}
+
+/* the block sequence: a real timed order, so it is numbered */
+.plan{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.plan li{
+  display:grid;grid-template-columns:20px 1fr auto;
+  align-items:baseline;gap:11px;
+  padding:7px 0;border-bottom:1px solid var(--line-soft);
+}
+.plan li:last-child{border-bottom:none}
+.plan .n{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:10.5px;color:var(--faint);
+}
+.plan .nm{font-size:13.5px;font-weight:500}
+.plan .fac{font-size:11.5px;color:var(--dim);font-weight:400;margin-left:7px}
+.plan .dur{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;
+}
+.plan li.is-rest .nm{color:var(--cool)}
+.plan li.is-rest .n{color:var(--cool)}
+
+.hist{border-top:var(--hair);padding-top:14px;display:flex;flex-direction:column;gap:9px}
+.hist-row{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.streak{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:22px;font-weight:500;line-height:1;
+}
+.bars{display:flex;align-items:flex-end;gap:4px;height:34px}
+.bars i{
+  display:block;width:13px;border-radius:1px;
+  background:var(--amber);opacity:.85;min-height:2px;
+}
+.bars i.empty{background:var(--inset);height:3px;opacity:1}
+.hist-note{font-size:11.5px;color:var(--faint)}
+
+/* =========================================================
+   TASK: STROOP
+   ========================================================= */
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center}
+.prompt-hint{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+
+.stroop-word{
+  font-family:"Chivo",sans-serif;
+  font-size:clamp(46px,10vw,74px);
+  font-weight:700;letter-spacing:.02em;line-height:1;
+  text-transform:uppercase;
+  transition:opacity .08s ease;
+}
+.c-r{color:var(--sr)} .c-b{color:var(--sb)} .c-g{color:var(--sg)} .c-y{color:var(--sy)}
+
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;width:min(440px,100%)}
+.sw{
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  padding:11px 6px 9px;border:1px solid var(--line);border-radius:3px;
+  background:var(--inset);transition:border-color .12s ease,background .12s ease;
+}
+.sw:hover{border-color:var(--faint)}
+.sw .chip{width:100%;height:16px;border-radius:2px}
+.sw .lab{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:10px;letter-spacing:.04em;color:var(--dim);
+}
+.sw .lab b{color:var(--text);font-weight:700}
+
+/* =========================================================
+   TASK: CORSI
+   ========================================================= */
+.grid4{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+  width:min(320px,86%);aspect-ratio:1;
+}
+.cell{
+  border:1px solid var(--line);border-radius:2px;background:var(--inset);
+  transition:background .1s ease,border-color .1s ease,box-shadow .1s ease;
+}
+.cell.lit{background:var(--amber);border-color:var(--amber);box-shadow:0 0 18px var(--amber-glow)}
+.cell.tap{background:var(--amber-wash);border-color:var(--amber)}
+.cell.ok{background:var(--go);border-color:var(--go)}
+.cell.bad{background:var(--no);border-color:var(--no)}
+.cell[disabled]{cursor:default}
+.cell:not([disabled]){cursor:pointer}
+
+/* =========================================================
+   TASK: ROTATION
+   ========================================================= */
+.rot-pair{display:flex;align-items:center;gap:clamp(14px,4vw,40px);flex-wrap:wrap;justify-content:center}
+.rot-fig{display:flex;flex-direction:column;align-items:center;gap:8px}
+.rot-fig canvas{display:block;border-radius:3px}
+.rot-fig .cap{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.rot-vs{font-family:"Newsreader",Georgia,serif;font-size:20px;color:var(--faint);font-style:italic}
+
+.binary{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(380px,100%)}
+.bin{
+  padding:12px 10px;border:1px solid var(--line);border-radius:3px;background:var(--inset);
+  display:flex;flex-direction:column;gap:4px;align-items:center;
+  transition:border-color .12s ease;
+}
+.bin:hover{border-color:var(--faint)}
+.bin .bt{font-size:14px;font-weight:700}
+.bin .bk{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10px;color:var(--dim)}
+
+/* =========================================================
+   TASK: N-BACK
+   ========================================================= */
+.nb-glyph{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:clamp(64px,13vw,96px);font-weight:500;line-height:1;
+  color:var(--amber);
+  width:1.4em;height:1.15em;display:grid;place-items:center;
+  border:1px solid var(--line);border-radius:4px;background:var(--inset);
+}
+.nb-glyph.blank{color:transparent}
+.nb-stream{display:flex;gap:5px;align-items:center;height:12px}
+.nb-stream i{width:7px;height:7px;border-radius:50%;background:var(--inset);display:block}
+.nb-stream i.on{background:var(--amber)}
+.nb-stream i.hit{background:var(--go)}
+.nb-stream i.miss{background:var(--no)}
+
+/* =========================================================
+   TASK: CHAIN
+   ========================================================= */
+.chain-val{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:clamp(46px,9.5vw,68px);font-weight:500;line-height:1;
+  letter-spacing:-.02em;
+}
+.chain-val.op{color:var(--amber)}
+.chain-in{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:34px;font-weight:500;text-align:center;
+  width:180px;padding:8px 10px;
+  background:var(--inset);color:var(--text);
+  border:1px solid var(--line);border-radius:3px;
+}
+.chain-in:focus{border-color:var(--amber);outline:none}
+.chain-steps{display:flex;gap:5px}
+.chain-steps i{width:16px;height:3px;border-radius:2px;background:var(--inset);display:block}
+.chain-steps i.on{background:var(--amber)}
+
+/* =========================================================
+   DOWNSHIFT — the only cool-hued view
+   ========================================================= */
+.breathe{flex:1;display:grid;place-items:center;position:relative}
+.ring{
+  width:min(260px,62vw);aspect-ratio:1;border-radius:50%;
+  border:1px solid var(--cool);
+  display:grid;place-items:center;
+  background:radial-gradient(circle,var(--cool-wash),transparent 70%);
+  transition:transform 1s cubic-bezier(.4,0,.5,1),box-shadow 1s ease;
+  will-change:transform;
+}
+.ring-in{text-align:center;display:flex;flex-direction:column;gap:6px}
+.ring-cue{
+  font-family:"Newsreader",Georgia,serif;
+  font-size:23px;font-weight:400;color:var(--cool);letter-spacing:.01em;
+}
+.ring-count{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums;
+}
+.breathe-note{
+  position:absolute;bottom:0;left:0;right:0;text-align:center;
+  font-size:12px;color:var(--faint);max-width:44ch;margin:0 auto;
+}
+
+/* =========================================================
+   DEBRIEF
+   ========================================================= */
+.debrief{flex:1;display:flex;flex-direction:column;gap:18px}
+.db-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.db-warm{text-align:right}
+.db-warm .big{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:30px;font-weight:500;line-height:1;font-variant-numeric:tabular-nums;
+}
+.db-warm .lab{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:5px}
+
+.scores{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.scores li{
+  display:grid;grid-template-columns:1fr 92px 120px;
+  align-items:center;gap:14px;
+  padding:9px 0;border-bottom:1px solid var(--line-soft);
+}
+.scores li:last-child{border-bottom:none}
+.sc-nm{font-size:13.5px;font-weight:500}
+.sc-nm span{display:block;font-size:11px;color:var(--dim);font-weight:400}
+.sc-v{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:14px;font-weight:500;text-align:right;font-variant-numeric:tabular-nums;
+}
+.sc-v em{font-style:normal;font-size:10.5px;color:var(--dim);margin-left:2px}
+.meter{height:5px;background:var(--inset);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--amber);border-radius:3px}
+.meter i.thin{background:var(--faint)}
+
+.spark{width:100%;height:56px;display:block}
+.db-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:auto}
+.db-line{font-size:13px;color:var(--dim);max-width:46ch}
+
+/* ---------- paused ---------- */
+.veil{
+  position:absolute;inset:0;background:var(--panel);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  text-align:center;z-index:4;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:660px){
+  .rest{grid-template-columns:1fr;gap:20px}
+  .stage{min-height:0;padding:18px 14px 20px}
+  .rail{grid-template-columns:1fr auto;gap:12px}
+  .rail-r{grid-column:1 / -1;text-align:left;border-top:1px solid var(--line-soft);padding-top:8px}
+  .scores li{grid-template-columns:1fr auto;gap:8px}
+  .scores .meter{display:none}
+  .lede{font-size:23px}
+  .swatches{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion: reduce){
+  .ring,.stage::after,.btn,.sw,.bin,.cell,.clock-arc{transition:none}
+}
+</style>
+
+<div class="console">
+  <header class="rail">
+    <div class="rail-l">
+      <div class="eyebrow" id="railTag">Cognitive warm-up</div>
+      <div class="rail-name" id="railName">Amber Protocol</div>
+    </div>
+    <div class="clock" id="clock">
+      <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
+        <circle class="clock-track" cx="29" cy="29" r="25" fill="none" stroke-width="2.5"></circle>
+        <circle class="clock-arc" id="clockArc" cx="29" cy="29" r="25" fill="none" stroke-width="2.5"
+                stroke-linecap="round" stroke-dasharray="157.08" stroke-dashoffset="157.08"></circle>
+      </svg>
+      <div class="clock-time" id="clockTime">&mdash;</div>
+    </div>
+    <div class="rail-r">
+      <div class="eyebrow" id="railMetricLab">Day streak</div>
+      <div class="rail-metric" id="railMetric">&mdash;</div>
+    </div>
+  </header>
+
+  <main class="stage" id="stage"></main>
+
+  <footer class="keyline">
+    <div class="keys" id="keyline"></div>
+    <div id="keylineR"></div>
+  </footer>
+</div>
+
+<style>
+/* sparkline figure — labels live in HTML so the stretched SVG never distorts text */
+.spark-fig{display:flex;flex-direction:column;gap:5px}
+.spark-top{display:flex;justify-content:space-between;align-items:baseline}
+.spark-lab{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums;
+}
+.spark{width:100%;height:56px;display:block;background:var(--inset);border-radius:3px}
+.spark-base{stroke:var(--line);stroke-width:1}
+.spark-area{fill:var(--amber-wash)}
+.spark-line{fill:none;stroke:var(--amber);stroke-width:1.75}
+.spark-end{stroke:var(--amber);stroke-width:1.25}
+/* per-trial countdown, so the time left is never a mystery */
+.tick{width:min(440px,100%);height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.tick i{display:block;height:100%;width:100%;background:var(--amber);border-radius:2px}
+.tick.warn i{background:var(--no)}
+
+/* rule card shown before each task */
+.primer{
+  flex:1;display:flex;flex-direction:column;justify-content:center;gap:15px;
+  width:min(56ch,100%);margin:0 auto;
+}
+.primer-rule{
+  font-family:"Newsreader",Georgia,serif;
+  font-size:25px;line-height:1.28;letter-spacing:-.012em;text-wrap:balance;
+}
+.primer-eg{
+  border-left:2px solid var(--amber);background:var(--amber-wash);
+  padding:12px 15px;display:flex;flex-direction:column;gap:8px;
+  font-size:13px;color:var(--dim);line-height:1.55;
+}
+.primer-eg b{color:var(--text);font-weight:700}
+.primer-demo{
+  font-family:"Chivo",sans-serif;font-size:34px;font-weight:700;
+  letter-spacing:.02em;text-transform:uppercase;line-height:1;
+}
+.primer-keys{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--dim)}
+.primer-go{display:flex;align-items:center;gap:13px;margin-top:3px}
+.primer-wait{flex:1;height:2px;background:var(--inset);border-radius:2px;overflow:hidden}
+.primer-wait i{display:block;height:100%;width:0;background:var(--faint)}
+.match-btn{
+  padding:11px 26px;border:1px solid var(--line);border-radius:3px;background:var(--inset);
+  font-weight:700;font-size:13px;letter-spacing:.04em;
+}
+.match-btn:hover{border-color:var(--amber);color:var(--amber)}
+</style>
+
+<script>
+"use strict";
+/* ============================================================
+   AMBER PROTOCOL
+   A timed cognitive warm-up: five speeded tasks from the
+   psychometric canon, spaced by box-breathing downshifts.
+   ============================================================ */
+
+const $  = (s, r) => (r || document).querySelector(s);
+const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
+const rnd  = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const median = a => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2); };
+
+const stage = $("#stage"), keyline = $("#keyline"), keylineR = $("#keylineR");
+const railTag = $("#railTag"), railName = $("#railName");
+const railMetric = $("#railMetric"), railMetricLab = $("#railMetricLab");
+const clock = $("#clock"), clockArc = $("#clockArc"), clockTime = $("#clockTime");
+const CIRC = 157.08;
+
+/* ---------- the protocol: fractions of the total session ---------- */
+const PROTOCOL = [
+  { task: "downshift", f: .06 },
+  { task: "stroop",    f: .18 },
+  { task: "corsi",     f: .18 },
+  { task: "downshift", f: .04 },
+  { task: "rotate",    f: .18 },
+  { task: "nback",     f: .18 },
+  { task: "chain",     f: .12 },
+  { task: "downshift", f: .06 },
+];
+const META = {
+  downshift: { name: "Downshift",       faculty: "parasympathetic reset" },
+  stroop:    { name: "Stroop",          faculty: "inhibitory control" },
+  corsi:     { name: "Corsi span",      faculty: "visuospatial memory" },
+  rotate:    { name: "Mental rotation", faculty: "spatial reasoning" },
+  nback:     { name: "N-back",          faculty: "working memory" },
+  chain:     { name: "Operator chain",  faculty: "numeric fluency" },
+};
+const DURATIONS = [8, 12, 18];
+
+/* ---------- session state ---------- */
+let S = null;
+let live = null;      // the mounted task
+let timers = [];
+let raf = 0;
+let chosenMinutes = 12;
+let history = [];     // past sessions, newest last
+let seen = {};        // times each task's rule card has been shown
+
+function freshState(minutes) {
+  const total = minutes * 60;
+  let at = 0;
+  const blocks = PROTOCOL.map((b, i) => {
+    const dur = Math.round(total * b.f);
+    const blk = { ...b, i, dur, start: at };
+    at += dur;
+    return blk;
+  });
+  return {
+    minutes, total: at, blocks, bi: -1,
+    t0: 0, blockT0: 0, phase: "idle", pausedAt: 0,
+    rtLog: [],
+    res: {
+      stroop: { n: 0, hit: 0, rts: [] },
+      corsi:  { n: 0, hit: 0, best: 0 },
+      rotate: { n: 0, hit: 0, rts: [] },
+      nback:  { n: 0, hit: 0, peak: 2, targets: 0, caught: 0, fa: 0 },
+      chain:  { n: 0, hit: 0, longest: 0 },
+    },
+  };
+}
+
+/* ---------- tracked timers, cleared on every unmount ---------- */
+function after(ms, fn) { const id = setTimeout(fn, ms); timers.push(id); return id; }
+function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+/* ---------- trial bookkeeping ---------- */
+function record(task, correct, rt) {
+  const r = S.res[task];
+  r.n++; if (correct) r.hit++;
+  if (correct && rt && r.rts) r.rts.push(rt);
+  if (correct && rt) S.rtLog.push({ t: (performance.now() - S.t0) / 1000, ms: rt });
+  paintRail();
+}
+function feedback(ok) {
+  stage.classList.remove("fb-go", "fb-no");
+  void stage.offsetWidth;
+  stage.classList.add(ok ? "fb-go" : "fb-no");
+  after(190, () => stage.classList.remove("fb-go", "fb-no"));
+}
+function setKeys(left, right) { keyline.innerHTML = left || ""; keylineR.innerHTML = right || ""; }
+
+/* ============================================================
+   PERSISTENCE — db when the viewer grants it, localStorage otherwise
+   ============================================================ */
+const Store = {
+  db: null,
+  async init() {
+    try { this.db = (window.claude && claude.use) ? await claude.use("db") : null; }
+    catch (e) { this.db = null; }
+  },
+  async load() {
+    if (this.db) {
+      try {
+        const snap = await this.db.doc("progress/main").get();
+        if (snap.exists) return this.shape(snap.data() || {});
+        return this.shape({});
+      } catch (e) { /* fall through to local */ }
+    }
+    try { return this.shape(JSON.parse(localStorage.getItem("amber.sessions") || "{}")); }
+    catch (e) { return this.shape({}); }
+  },
+  /* tolerate the older array-only format as well as a missing document */
+  shape(d) {
+    if (Array.isArray(d)) return { sessions: d, seen: {} };
+    return { sessions: Array.isArray(d.sessions) ? d.sessions : [],
+             seen: (d.seen && typeof d.seen === "object") ? d.seen : {} };
+  },
+  async save(list, seenMap) {
+    const body = { sessions: list.slice(-40), seen: seenMap || {} };
+    if (this.db) {
+      try { await this.db.doc("progress/main").set(body); return; }
+      catch (e) { /* fall through */ }
+    }
+    try { localStorage.setItem("amber.sessions", JSON.stringify(body)); } catch (e) {}
+  },
+};
+
+const dayKey = d => { const x = new Date(d); return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); };
+function streakOf(list) {
+  const days = new Set(list.map(s => dayKey(s.at)));
+  let n = 0, cur = new Date();
+  if (!days.has(dayKey(cur))) { cur.setDate(cur.getDate() - 1); if (!days.has(dayKey(cur))) return 0; }
+  while (days.has(dayKey(cur))) { n++; cur.setDate(cur.getDate() - 1); }
+  return n;
+}
+
+/* ============================================================
+   RAIL + CLOCK
+   ============================================================ */
+function paintRail() {
+  if (!S || S.phase === "idle" || S.phase === "done") {
+    railTag.textContent = "Cognitive warm-up";
+    railName.textContent = "Amber Protocol";
+    railMetricLab.textContent = "Day streak";
+    const st = streakOf(history);
+    railMetric.innerHTML = history.length
+      ? st + '<span class="unit">' + (st === 1 ? "day" : "days") + "</span>"
+      : '<span class="unit">first run</span>';
+    return;
+  }
+  const b = S.blocks[S.bi], m = META[b.task];
+  railTag.textContent = "Block " + (S.bi + 1) + " of " + S.blocks.length + " \u00B7 " + m.faculty;
+  railName.textContent = m.name;
+  railMetricLab.textContent = "Median response";
+  const all = S.rtLog.map(r => r.ms);
+  if (all.length < 3) { railMetric.innerHTML = '<span class="unit">warming up</span>'; return; }
+  const base = median(all.slice(0, Math.max(3, Math.ceil(all.length / 3))));
+  const now = median(all.slice(-6));
+  const d = now - base;
+  railMetric.innerHTML = now + '<span class="unit">ms</span>' +
+    (Math.abs(d) > 15 ? '<span class="delta ' + (d < 0 ? "warm" : "cold") + '">' + (d < 0 ? "\u25BC" : "\u25B2") + Math.abs(d) + "</span>" : "");
+}
+
+function paintClock() {
+  if (!S || S.phase === "idle") { clockTime.textContent = chosenMinutes + ":00"; clockArc.setAttribute("stroke-dashoffset", CIRC); clock.classList.remove("cool"); return; }
+  const left = Math.max(0, S.total - elapsed());
+  const mm = Math.floor(left / 60), ss = Math.floor(left % 60);
+  clockTime.textContent = mm + ":" + String(ss).padStart(2, "0");
+  clockArc.setAttribute("stroke-dashoffset", CIRC * (1 - left / S.total));
+}
+const elapsed = () => S.phase === "paused" ? (S.pausedAt - S.t0) / 1000 : (performance.now() - S.t0) / 1000;
+
+function loop() {
+  raf = requestAnimationFrame(loop);
+  if (!S || S.phase !== "running") return;
+  paintClock();
+  const b = S.blocks[S.bi];
+  if ((performance.now() - S.blockT0) / 1000 >= b.dur) nextBlock();
+}
+
+/* ============================================================
+   REST VIEW — the protocol, shown at rest
+   ============================================================ */
+function viewRest() {
+  S = freshState(chosenMinutes);
+  S.phase = "idle";
+  stage.classList.remove("fb-go", "fb-no");
+  clock.classList.remove("cool");
+  paintRail(); paintClock();
+
+  const wrap = el("div", "rest");
+
+  const lhs = el("div", "rest-run");
+  const WORD = { 8: "Eight", 12: "Twelve", 18: "Eighteen" };
+  lhs.appendChild(el("div", "lede", (WORD[chosenMinutes] || chosenMinutes) + " minutes of deliberate difficulty, then back to the keyboard."));
+  lhs.appendChild(el("div", "sub",
+    "Five speeded tasks from the psychometric canon &mdash; Stroop, Corsi span, mental rotation, n&#8209;back, operator chains &mdash; " +
+    "spaced by box&#8209;breathing downshifts. Difficulty tracks your accuracy, so it stays just past comfortable. " +
+    "The console records your reaction time throughout and reports whether you actually woke up."));
+
+  const seg = el("div", "seg");
+  DURATIONS.forEach(m => {
+    const b = el("button", null, m + " min");
+    b.setAttribute("aria-pressed", String(m === chosenMinutes));
+    b.onclick = () => { chosenMinutes = m; viewRest(); };
+    seg.appendChild(b);
+  });
+  const segWrap = el("div");
+  segWrap.appendChild(el("div", "eyebrow", "Session length"));
+  segWrap.style.display = "flex"; segWrap.style.flexDirection = "column"; segWrap.style.gap = "7px";
+  segWrap.appendChild(seg);
+  lhs.appendChild(segWrap);
+
+  const start = el("button", "btn", "Begin session");
+  start.onclick = begin;
+  const startRow = el("div"); startRow.appendChild(start);
+  lhs.appendChild(startRow);
+
+  const rhs = el("div");
+  rhs.style.display = "flex"; rhs.style.flexDirection = "column"; rhs.style.gap = "16px";
+  rhs.appendChild(el("div", "eyebrow", "Protocol &middot; " + chosenMinutes + " min"));
+  const plan = el("ul", "plan");
+  S.blocks.forEach((b, i) => {
+    const m = META[b.task], rest = b.task === "downshift";
+    const li = el("li", rest ? "is-rest" : null);
+    li.innerHTML =
+      '<span class="n">' + String(i + 1).padStart(2, "0") + "</span>" +
+      '<span><span class="nm">' + m.name + '</span><span class="fac">' + m.faculty + "</span></span>" +
+      '<span class="dur">' + fmtDur(b.dur) + "</span>";
+    plan.appendChild(li);
+  });
+  rhs.appendChild(plan);
+  rhs.appendChild(historyBlock());
+  wrap.appendChild(lhs); wrap.appendChild(rhs);
+
+  stage.replaceChildren(wrap);
+  setKeys('<kbd>Space</kbd> begin <span class="sep">/</span> <kbd>Esc</kbd> pause mid&#8209;session',
+    '<span class="mono">5 faculties</span>');
+  live = { key(e) { if (e.code === "Space") { e.preventDefault(); begin(); } } };
+}
+
+const fmtDur = s => s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : "0:" + String(s).padStart(2, "0");
+
+function historyBlock() {
+  const h = el("div", "hist");
+  const last = history.slice(-7);
+  const row = el("div", "hist-row");
+  const left = el("div");
+  left.appendChild(el("div", "eyebrow", "Recent sessions"));
+  left.appendChild(el("div", "streak", last.length ? last.length + (history.length > 7 ? " of " + history.length : "") : "&mdash;"));
+  const bars = el("div", "bars");
+  const peak = Math.max(1, ...last.map(s => s.score || 0));
+  for (let i = 0; i < 7; i++) {
+    const s = last[last.length - 7 + i];
+    const b = el("i");
+    if (s) b.style.height = Math.round(6 + 28 * ((s.score || 0) / peak)) + "px";
+    else b.className = "empty";
+    if (s) b.title = new Date(s.at).toLocaleDateString() + " \u00B7 composite " + Math.round(s.score);
+    bars.appendChild(b);
+  }
+  row.appendChild(left); row.appendChild(bars);
+  h.appendChild(row);
+  h.appendChild(el("div", "hist-note", last.length
+    ? "Bar height is the composite across all five faculties."
+    : "Nothing logged yet &mdash; this run becomes your baseline."));
+  return h;
+}
+
+/* ============================================================
+   BLOCK RUNNER
+   ============================================================ */
+function begin() {
+  S = freshState(chosenMinutes);
+  S.phase = "running";
+  S.t0 = performance.now();
+  S.bi = -1;
+  nextBlock();
+}
+function nextBlock() {
+  clearTimers();
+  if (live && live.destroy) live.destroy();
+  live = null;
+  S.bi++;
+  if (S.bi >= S.blocks.length) { finish(); return; }
+  S.blockT0 = performance.now();
+  const b = S.blocks[S.bi];
+  clock.classList.toggle("cool", b.task === "downshift");
+  paintRail(); paintClock();
+  live = b.task === "downshift" ? TASKS.downshift(b) : primer(b);
+}
+
+/* ============================================================
+   RULE CARDS — every task states its rule, with a worked example,
+   before a single trial runs. Space skips; they shorten once seen.
+   ============================================================ */
+const PRIMERS = {
+  stroop: {
+    rule: "Answer the colour you <b>see</b>. Ignore the word you <b>read</b>.",
+    eg: '<div class="primer-demo c-y">BLUE</div>' +
+        "<div>This word says <b>BLUE</b>, but it is printed in <b>GOLD</b>. " +
+        "Gold is the answer &mdash; press <b>4</b>.</div>",
+    keys: '<kbd>1</kbd> red <kbd>2</kbd> blue <kbd>3</kbd> green <kbd>4</kbd> gold',
+  },
+  corsi: {
+    rule: "Cells light up one at a time. Click them back in the same order.",
+    eg: "<div>Three cells flash, so you click those three &mdash; in the order they lit, " +
+        "not all at once. Every clean sequence adds one more cell.</div>",
+    keys: "Point and click. No keys for this one.",
+  },
+  rotate: {
+    rule: "Is the right-hand figure the left one <b>turned</b>, or its <b>mirror image</b>?",
+    eg: "<div>Turning is allowed &mdash; a figure may be rotated a quarter, half or " +
+        "three-quarter turn. Flipping is not. If no amount of turning can line the two " +
+        "up, it is mirrored. Take your time; this one is not a speed test.</div>",
+    keys: '<kbd>J</kbd> same figure <kbd>K</kbd> mirrored',
+  },
+  nback: {
+    rule: "Press Space when the letter matches the one <b>N places back</b>.",
+    eg: '<div class="primer-demo" style="letter-spacing:.3em;font-family:JetBrains Mono,monospace">C K C</div>' +
+        "<div>At <b>2-back</b>, that last <b>C</b> matches the C two places earlier, so you " +
+        "press Space. Stay quiet for everything else.</div>",
+    keys: '<kbd>Space</kbd> on a match &mdash; or the MATCH button',
+  },
+  chain: {
+    rule: "Hold a running total while the operators arrive one at a time.",
+    eg: '<div class="primer-demo"><span style="color:var(--text)">12</span> ' +
+        '<span style="color:var(--amber)">&times; 3</span> ' +
+        '<span style="color:var(--amber)">&minus; 6</span></div>' +
+        "<div>Twelve, times three is thirty-six, minus six is <b>30</b>. Type 30, press Enter.</div>",
+    keys: 'Digits, then <kbd>Enter</kbd>',
+  },
+};
+
+function primer(block) {
+  const m = META[block.task], P = PRIMERS[block.task];
+  const times = seen[block.task] || 0;
+  seen[block.task] = times + 1;
+  const wait = times === 0 ? 12000 : times < 4 ? 6000 : 2600;
+
+  const wrap = el("div", "primer");
+  wrap.appendChild(el("div", "eyebrow", m.name + " &middot; " + m.faculty));
+  wrap.appendChild(el("div", "primer-rule", P.rule));
+  wrap.appendChild(el("div", "primer-eg", P.eg));
+  wrap.appendChild(el("div", "primer-keys", P.keys));
+
+  const go = el("div", "primer-go");
+  const btn = el("button", "btn", times === 0 ? "I've got it" : "Start block");
+  btn.onclick = start;
+  const bar = el("div", "primer-wait"), fill = el("i");
+  bar.appendChild(fill);
+  go.appendChild(btn); go.appendChild(bar);
+  wrap.appendChild(go);
+
+  stage.replaceChildren(wrap);
+  setKeys('<kbd>Space</kbd> start the block now',
+          '<span class="mono">starts in ' + Math.round(wait / 1000) + "s</span>");
+  requestAnimationFrame(() => { fill.style.transition = "width " + wait + "ms linear"; fill.style.width = "100%"; });
+  after(wait, start);
+
+  function start() { clearTimers(); live = TASKS[block.task](block); }
+  return { key(e) { if (e.code === "Space") { e.preventDefault(); start(); } } };
+}
+
+/* ============================================================
+   TASK 1 — STROOP  ·  inhibitory control
+   Name the ink, suppress the word. 70% incongruent.
+   ============================================================ */
+const SCOL = [
+  { n: "RED",   c: "c-r", v: "--sr" },
+  { n: "BLUE",  c: "c-b", v: "--sb" },
+  { n: "GREEN", c: "c-g", v: "--sg" },
+  { n: "GOLD",  c: "c-y", v: "--sy" },
+];
+function taskStroop() {
+  const ASK = "Which colour is the text printed in?";
+  const wrap = el("div", "center");
+  const hint = el("div", "prompt-hint", ASK);
+  wrap.appendChild(hint);
+  const word = el("div", "stroop-word", "&nbsp;");
+  wrap.appendChild(word);
+  const tick = el("div", "tick"), tickFill = el("i");
+  tick.appendChild(tickFill);
+  wrap.appendChild(tick);
+  const sws = el("div", "swatches");
+  SCOL.forEach((c, i) => {
+    const b = el("button", "sw");
+    b.innerHTML = '<span class="chip" style="background:var(' + c.v + ')"></span>' +
+                  '<span class="lab"><b>' + (i + 1) + "</b> " + c.n + "</span>";
+    b.onclick = () => answer(i);
+    sws.appendChild(b);
+  });
+  wrap.appendChild(sws);
+  stage.replaceChildren(wrap);
+  setKeys('<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> the colour you see',
+          '<span class="mono" id="swDl">4.0 s</span>');
+
+  // Opens at four seconds a trial and tightens only after five straight, so the
+  // window closes at the pace you actually speed up. The bar shows the time left.
+  let ink = 0, t0 = 0, armed = false, dl = 4000, streak = 0;
+
+  function trial() {
+    ink = rnd(4);
+    const congruent = Math.random() < .3;
+    const wi = congruent ? ink : pick([0, 1, 2, 3].filter(x => x !== ink));
+    hint.textContent = ASK;
+    word.className = "stroop-word " + SCOL[ink].c;
+    word.textContent = SCOL[wi].n;
+    const dlEl = $("#swDl"); if (dlEl) dlEl.textContent = (dl / 1000).toFixed(1) + " s";
+    tick.classList.remove("warn");
+    tickFill.style.transition = "none";
+    tickFill.style.width = "100%";
+    requestAnimationFrame(() => {
+      tickFill.style.transition = "width " + dl + "ms linear";
+      tickFill.style.width = "0%";
+    });
+    t0 = performance.now(); armed = true;
+    after(dl, () => { if (armed) answer(-1); });
+  }
+
+  function answer(i) {
+    if (!armed) return;
+    armed = false;
+    const ok = i === ink, rt = Math.round(performance.now() - t0);
+    tickFill.style.transition = "none";
+    record("stroop", ok, ok ? rt : 0);
+    feedback(ok);
+    if (ok) { streak++; if (streak >= 5) { dl = Math.max(1900, dl - 70); streak = 0; } }
+    else { streak = 0; dl = Math.min(4500, dl + 250); tick.classList.add("warn"); }
+    // close on the answer: the ink's name, printed in the ink
+    hint.textContent = i < 0 ? "Ran out of time \u2014 that was " + SCOL[ink].n
+                     : ok    ? "Correct"
+                             : "That was " + SCOL[ink].n;
+    word.className = "stroop-word " + SCOL[ink].c;
+    word.textContent = SCOL[ink].n;
+    after(ok ? 520 : 1100, trial);
+  }
+
+  trial();
+  return { key(e) { const i = "1234".indexOf(e.key); if (i >= 0) { e.preventDefault(); answer(i); } } };
+}
+
+/* ============================================================
+   TASK 2 — CORSI SPAN  ·  visuospatial working memory
+   Sequence flashes; reproduce it in order. Span adapts.
+   ============================================================ */
+function taskCorsi() {
+  const wrap = el("div", "center");
+  const hint = el("div", "prompt-hint", "Watch");
+  wrap.appendChild(hint);
+  const grid = el("div", "grid4");
+  const cells = [];
+  for (let i = 0; i < 16; i++) {
+    const c = el("button", "cell");
+    c.disabled = true;
+    c.onclick = () => tap(i);
+    cells.push(c); grid.appendChild(c);
+  }
+  wrap.appendChild(grid);
+  stage.replaceChildren(wrap);
+  setKeys("Click the cells in the order they lit", '<span class="mono" id="csSpan">span 3</span>');
+
+  let span = 3, seq = [], got = 0, taking = false;
+  function show() {
+    taking = false; got = 0; seq = [];
+    cells.forEach(c => { c.className = "cell"; c.disabled = true; });
+    const pool = [...Array(16).keys()];
+    for (let i = 0; i < span; i++) seq.push(pool.splice(rnd(pool.length), 1)[0]);
+    hint.textContent = "Watch";
+    const sp = $("#csSpan"); if (sp) sp.textContent = "span " + span;
+    seq.forEach((c, i) => {
+      after(i * 560 + 260, () => cells[c].classList.add("lit"));
+      after(i * 560 + 700, () => cells[c].classList.remove("lit"));
+    });
+    after(seq.length * 560 + 400, () => {
+      taking = true;
+      hint.textContent = "Repeat the order";
+      cells.forEach(c => { c.disabled = false; });
+    });
+  }
+  function tap(i) {
+    if (!taking) return;
+    if (seq[got] !== i) { fail(i); return; }
+    cells[i].classList.add("tap");
+    after(220, () => cells[i].classList.remove("tap"));
+    got++;
+    if (got === span) win();
+  }
+  function win() {
+    taking = false;
+    cells.forEach(c => c.disabled = true);
+    seq.forEach(c => cells[c].classList.add("ok"));
+    record("corsi", true, 0);
+    S.res.corsi.best = Math.max(S.res.corsi.best, span);
+    feedback(true);
+    span = Math.min(9, span + 1);
+    after(800, show);
+  }
+  function fail(i) {
+    taking = false;
+    cells.forEach(c => c.disabled = true);
+    cells[i].classList.add("bad");
+    cells[seq[got]].classList.add("lit");
+    record("corsi", false, 0);
+    feedback(false);
+    hint.textContent = "That one was next";
+    span = Math.max(3, span - 1);
+    after(1100, show);
+  }
+  show();
+  return { key() {} };
+}
+
+/* ============================================================
+   TASK 3 — MENTAL ROTATION  ·  spatial reasoning
+   Chiral lattice figures; is the probe a rotation or a mirror?
+   ============================================================ */
+const nrm = cs => { const mx = Math.min(...cs.map(c => c[0])), my = Math.min(...cs.map(c => c[1]));
+  return cs.map(c => [c[0] - mx, c[1] - my]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(c => c.join(",")).join(";"); };
+const rot = cs => cs.map(([x, y]) => [-y, x]);
+const mir = cs => cs.map(([x, y]) => [-x, y]);
+function walk(n) {
+  const cs = [[0, 0]], seen = new Set(["0,0"]);
+  while (cs.length < n) {
+    const f = cs[cs.length - 1];
+    const ds = [[1, 0], [-1, 0], [0, 1], [0, -1]].sort(() => Math.random() - .5);
+    let ok = false;
+    for (const d of ds) { const c = [f[0] + d[0], f[1] + d[1]], k = c.join(",");
+      if (!seen.has(k)) { cs.push(c); seen.add(k); ok = true; break; } }
+    if (!ok) break;
+  }
+  return cs;
+}
+function chiral(cs) { let m = mir(cs); for (let i = 0; i < 4; i++) { if (nrm(m) === nrm(cs)) return false; m = rot(m); } return true; }
+function genShape(n) { for (let t = 0; t < 80; t++) { const s = walk(n); if (s.length === n && chiral(s)) return s; } return walk(n); }
+
+function drawShape(cv, cs, size) {
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = size * dpr; cv.height = size * dpr;
+  cv.style.width = size + "px"; cv.style.height = size + "px";
+  const g = cv.getContext("2d");
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cs2 = cs.map(c => [...c]);
+  const mx = Math.min(...cs2.map(c => c[0])), my = Math.min(...cs2.map(c => c[1]));
+  const norm = cs2.map(c => [c[0] - mx, c[1] - my]);
+  const w = Math.max(...norm.map(c => c[0])) + 1, h = Math.max(...norm.map(c => c[1])) + 1;
+  const cell = Math.floor((size - 16) / Math.max(w, h));
+  const ox = (size - w * cell) / 2, oy = (size - h * cell) / 2;
+  const st = getComputedStyle(document.body);
+  g.clearRect(0, 0, size, size);
+  g.fillStyle = st.getPropertyValue("--inset").trim() || "#222733";
+  g.fillRect(0, 0, size, size);
+  g.fillStyle = st.getPropertyValue("--amber").trim() || "#F0A93B";
+  norm.forEach(([x, y]) => {
+    const px = ox + x * cell + 1, py = oy + y * cell + 1, s = cell - 2;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(px, py, s, s, 2); else g.rect(px, py, s, s);
+    g.fill();
+  });
+}
+
+function taskRotate() {
+  const ASK = "Same figure turned, or its mirror image?";
+  const wrap = el("div", "center");
+  const hint = el("div", "prompt-hint", ASK);
+  wrap.appendChild(hint);
+  const pair = el("div", "rot-pair");
+  const size = Math.min(150, Math.max(104, Math.floor((stage.clientWidth - 90) / 2.6)));
+  const mk = cap => { const f = el("div", "rot-fig"); const c = document.createElement("canvas");
+    f.appendChild(c); f.appendChild(el("div", "cap", cap)); return { f, c }; };
+  const A = mk("Reference"), B = mk("Probe");
+  pair.appendChild(A.f); pair.appendChild(el("div", "rot-vs", "vs")); pair.appendChild(B.f);
+  wrap.appendChild(pair);
+  const tick = el("div", "tick"), tickFill = el("i");
+  tick.appendChild(tickFill);
+  wrap.appendChild(tick);
+  const bin = el("div", "binary");
+  const bSame = el("button", "bin", '<span class="bt">Same figure</span><span class="bk">J</span>');
+  const bMir  = el("button", "bin", '<span class="bt">Mirrored</span><span class="bk">K</span>');
+  bSame.onclick = () => answer(false); bMir.onclick = () => answer(true);
+  bin.appendChild(bSame); bin.appendChild(bMir);
+  wrap.appendChild(bin);
+  stage.replaceChildren(wrap);
+  setKeys('<kbd>J</kbd> same <span class="sep">/</span> <kbd>K</kbd> mirrored',
+          '<span class="mono" id="rtLvl">5 cells</span>');
+
+  // Rotation is deliberate work, not reflex: eleven seconds a trial, tightening
+  // slowly, and the pair stays on screen after a miss so you can see the answer.
+  let mirrored = false, t0 = 0, armed = false, streak = 0, cellsN = 5, dl = 11000;
+
+  function trial() {
+    const sh = genShape(cellsN);
+    mirrored = Math.random() < .5;
+    let pr = mirrored ? mir(sh) : sh.map(c => [...c]);
+    const turns = rnd(4);
+    for (let i = 0; i < turns; i++) pr = rot(pr);
+    drawShape(A.c, sh, size);
+    drawShape(B.c, pr, size);
+    hint.textContent = ASK;
+    const lv = $("#rtLvl"); if (lv) lv.textContent = cellsN + " cells";
+    tick.classList.remove("warn");
+    tickFill.style.transition = "none"; tickFill.style.width = "100%";
+    requestAnimationFrame(() => {
+      tickFill.style.transition = "width " + dl + "ms linear";
+      tickFill.style.width = "0%";
+    });
+    t0 = performance.now(); armed = true;
+    after(dl, () => { if (armed) answer(null); });
+  }
+
+  function answer(saidMirror) {
+    if (!armed) return;
+    armed = false;
+    tickFill.style.transition = "none";
+    const timedOut = saidMirror === null;
+    const ok = !timedOut && saidMirror === mirrored;
+    const rt = Math.round(performance.now() - t0);
+    record("rotate", ok, ok ? rt : 0);
+    feedback(ok);
+    if (ok) { streak++; if (streak >= 4 && cellsN < 8) { cellsN++; streak = 0; } dl = Math.max(5000, dl - 200); }
+    else { streak = 0; if (cellsN > 5) cellsN--; dl = Math.min(12000, dl + 600); tick.classList.add("warn"); }
+    hint.textContent = timedOut ? "Ran out of time \u2014 that pair was " + (mirrored ? "mirrored" : "the same figure")
+                     : ok       ? "Correct"
+                                : "No \u2014 that pair was " + (mirrored ? "mirrored" : "the same figure");
+    after(ok ? 900 : 1900, trial);
+  }
+
+  trial();
+  return { key(e) { const k = e.key.toLowerCase();
+    if (k === "j") { e.preventDefault(); answer(false); }
+    else if (k === "k") { e.preventDefault(); answer(true); } } };
+}
+
+/* ============================================================
+   TASK 4 — N-BACK  ·  working memory under continuous load
+   ============================================================ */
+const NG = ["C", "H", "K", "L", "Q", "R", "S", "T"];
+function taskNback() {
+  const wrap = el("div", "center");
+  const hint = el("div", "prompt-hint", "Match with 2 back");
+  wrap.appendChild(hint);
+  const gl = el("div", "nb-glyph blank", "\u2014");
+  wrap.appendChild(gl);
+  const dots = el("div", "nb-stream");
+  wrap.appendChild(dots);
+  const mb = el("button", "match-btn", "MATCH");
+  mb.onclick = press;
+  wrap.appendChild(mb);
+  stage.replaceChildren(wrap);
+  setKeys('<kbd>Space</kbd> when it matches N back', '<span class="mono" id="nbN">2-back</span>');
+
+  let n = 2, stream = [], isTarget = false, responded = false, t0 = 0, trial = 0;
+  let wT = 0, wC = 0, wF = 0;   // window-local target / caught / false-alarm counts
+
+  function dot(cls) {
+    const i = el("i", cls);
+    dots.appendChild(i);
+    while (dots.children.length > 14) dots.removeChild(dots.firstChild);
+  }
+  function step() {
+    let item;
+    if (stream.length >= n && Math.random() < .32) item = stream[stream.length - n];
+    else { const bad = stream.length >= n ? stream[stream.length - n] : null;
+           item = pick(NG.filter(g => g !== bad)); }
+    stream.push(item);
+    isTarget = stream.length > n && item === stream[stream.length - 1 - n];
+    if (isTarget) { S.res.nback.targets++; wT++; }
+    responded = false;
+    gl.textContent = item;
+    gl.className = "nb-glyph";
+    dot("on");
+    t0 = performance.now();
+    after(1150, () => { gl.className = "nb-glyph blank"; });
+    after(2700, () => { settle(); trial++; adapt(); step(); });
+  }
+  function settle() {
+    if (isTarget && !responded) {
+      record("nback", false, 0);
+      dots.lastChild.className = "miss";
+      feedback(false);
+    } else if (!isTarget && !responded) {
+      dots.lastChild.className = "";
+    }
+  }
+  function press() {
+    if (responded) return;
+    responded = true;
+    const rt = Math.round(performance.now() - t0);
+    if (isTarget) {
+      S.res.nback.caught++; wC++;
+      record("nback", true, rt);
+      dots.lastChild.className = "hit";
+      feedback(true);
+    } else {
+      S.res.nback.fa++; wF++;
+      record("nback", false, 0);
+      dots.lastChild.className = "miss";
+      feedback(false);
+    }
+  }
+  function adapt() {
+    if (trial % 15 !== 0) return;
+    const rate = wT ? wC / wT : 0;
+    if (rate >= .8 && wF <= 2 && n < 4) n++;
+    else if (rate < .5 && n > 2) n--;
+    S.res.nback.peak = Math.max(S.res.nback.peak, n);
+    wT = wC = wF = 0;
+    hint.textContent = "Match with " + n + " back";
+    const e = $("#nbN"); if (e) e.textContent = n + "-back";
+  }
+  after(900, step);
+  return { key(e) { if (e.code === "Space") { e.preventDefault(); press(); } } };
+}
+
+/* ============================================================
+   TASK 5 — OPERATOR CHAIN  ·  numeric fluency under load
+   Hold a running value while operators arrive one at a time.
+   ============================================================ */
+const OPG = { "+": "+", "-": "\u2212", "x": "\u00D7", "/": "\u00F7" };
+function makeChain(k) {
+  let v = 4 + rnd(12);
+  const start = v, steps = [];
+  for (let i = 0; i < k; i++) {
+    let placed = false;
+    for (let t = 0; t < 16 && !placed; t++) {
+      const op = pick(v > 45 ? ["-", "/", "/", "+"] : ["+", "-", "x", "+"]);
+      let nn, res;
+      if (op === "+") { nn = 2 + rnd(17); res = v + nn; }
+      else if (op === "-") { nn = 1 + rnd(Math.max(1, Math.min(v - 1, 16))); res = v - nn; }
+      else if (op === "x") { nn = 2 + rnd(v > 28 ? 2 : 3); res = v * nn; }
+      else { const ds = [2, 3, 4, 5, 6].filter(d => v % d === 0 && v / d >= 2); if (!ds.length) continue; nn = pick(ds); res = v / nn; }
+      if (!Number.isInteger(res) || res < 2 || res > 420) continue;
+      steps.push({ op, nn }); v = res; placed = true;
+    }
+    if (!placed) { steps.push({ op: "+", nn: 7 }); v += 7; }
+  }
+  return { start, steps, answer: v };
+}
+function taskChain() {
+  const wrap = el("div", "center");
+  const hint = el("div", "prompt-hint", "Track the running value");
+  wrap.appendChild(hint);
+  const val = el("div", "chain-val", "&nbsp;");
+  wrap.appendChild(val);
+  const bar = el("div", "chain-steps");
+  wrap.appendChild(bar);
+  const inp = document.createElement("input");
+  inp.className = "chain-in"; inp.type = "text"; inp.inputMode = "numeric";
+  inp.autocomplete = "off"; inp.setAttribute("aria-label", "Final value");
+  inp.style.visibility = "hidden";
+  inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); submit(); }
+                         else if (e.key === "Escape") { e.preventDefault(); togglePause(); } };
+  wrap.appendChild(inp);
+  stage.replaceChildren(wrap);
+  setKeys('Type the result <span class="sep">/</span> <kbd>Enter</kbd> to submit', '<span class="mono" id="chLen">3 operators</span>');
+
+  let len = 3, ch = null, t0 = 0, armed = false;
+  function trial() {
+    armed = false;
+    ch = makeChain(len);
+    inp.value = ""; inp.style.visibility = "hidden";
+    bar.replaceChildren(...ch.steps.map(() => el("i")));
+    const e = $("#chLen"); if (e) e.textContent = len + " operator" + (len === 1 ? "" : "s");
+    hint.textContent = "Start from";
+    val.className = "chain-val"; val.textContent = ch.start;
+    ch.steps.forEach((s, i) => {
+      after(1400 + i * 1400, () => {
+        hint.textContent = "Apply";
+        val.className = "chain-val op";
+        val.textContent = OPG[s.op] + " " + s.nn;
+        bar.children[i].className = "on";
+      });
+    });
+    after(1400 + ch.steps.length * 1400, () => {
+      hint.textContent = "Final value?";
+      val.className = "chain-val"; val.innerHTML = "&#63;";
+      inp.style.visibility = "visible"; inp.focus();
+      t0 = performance.now(); armed = true;
+    });
+  }
+  function submit() {
+    if (!armed) return;
+    armed = false;
+    const ok = inp.value.trim() !== "" && Number(inp.value.trim()) === ch.answer;
+    const rt = Math.round(performance.now() - t0);
+    record("chain", ok, ok ? rt : 0);
+    feedback(ok);
+    if (ok) { S.res.chain.longest = Math.max(S.res.chain.longest, len); len = Math.min(6, len + 1); }
+    else { len = Math.max(2, len - 1); }
+    inp.style.visibility = "hidden";
+    hint.textContent = ok ? "Correct" : "It was " + ch.answer;
+    val.className = "chain-val"; val.textContent = ch.answer;
+    after(1500, trial);
+  }
+  trial();
+  return { key() {}, destroy() { inp.blur(); } };
+}
+
+/* ============================================================
+   DOWNSHIFT  ·  4-4-4-4 box breathing, the only cool-hued view
+   ============================================================ */
+const PHASES = [["Breathe in", 4, 1], ["Hold", 4, 1], ["Breathe out", 4, .62], ["Hold", 4, .62]];
+function taskDownshift(block) {
+  const idx = S.blocks.filter(b => b.task === "downshift" && b.i < block.i).length;
+  const total = S.blocks.filter(b => b.task === "downshift").length;
+  const notes = [
+    "Nothing is scored here. Let the count hold your attention while your breathing slows.",
+    "Long exhale. That half of the cycle is the part that does the work.",
+    "That is the session. Keep this pace for your first ten minutes back at the keyboard.",
+  ];
+  const note = idx === 0 ? notes[0] : (idx === total - 1 ? notes[2] : notes[1]);
+
+  const wrap = el("div", "breathe");
+  const ring = el("div", "ring");
+  const cue = el("div", "ring-cue", "Settle");
+  const cnt = el("div", "ring-count", "4");
+  const inner = el("div", "ring-in");
+  inner.appendChild(cue); inner.appendChild(cnt);
+  ring.appendChild(inner);
+  wrap.appendChild(ring);
+  wrap.appendChild(el("div", "breathe-note", note));
+  stage.replaceChildren(wrap);
+  setKeys("Follow the ring &mdash; in four, hold four, out four, hold four",
+          '<span class="mono">' + fmtDur(block.dur) + "</span>");
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  ring.style.transform = "scale(.62)";
+  let i = 0;
+  function phase() {
+    const [label, secs, scale] = PHASES[i % PHASES.length];
+    cue.textContent = label;
+    if (!reduce) { ring.style.transitionDuration = secs + "s"; ring.style.transform = "scale(" + scale + ")"; }
+    let left = secs;
+    cnt.textContent = left;
+    const tick = () => { left--; if (left > 0) { cnt.textContent = left; after(1000, tick); } };
+    after(1000, tick);
+    after(secs * 1000, () => { i++; phase(); });
+  }
+  after(500, phase);
+  return { key() {} };
+}
+
+const TASKS = { stroop: taskStroop, corsi: taskCorsi, rotate: taskRotate, nback: taskNback, chain: taskChain, downshift: taskDownshift };
+
+/* ============================================================
+   DEBRIEF
+   ============================================================ */
+function composite() {
+  const r = S.res, p = [];
+  if (r.stroop.n) p.push(r.stroop.hit / r.stroop.n);
+  if (r.corsi.n)  p.push(clamp(r.corsi.best / 9, 0, 1));
+  if (r.rotate.n) p.push(r.rotate.hit / r.rotate.n);
+  if (r.nback.targets) p.push(clamp(r.nback.caught / r.nback.targets - r.nback.fa / (r.nback.targets * 2), 0, 1));
+  if (r.chain.n)  p.push(clamp(r.chain.longest / 6, 0, 1));
+  return p.length ? Math.round(p.reduce((a, b) => a + b, 0) / p.length * 100) : 0;
+}
+
+function sparkline(all, openMed) {
+  const W = 640, H = 112, PAD = 6;
+  const peak = Math.max(...all, openMed) * 1.12;
+  const x = i => PAD + (i / Math.max(1, all.length - 1)) * (W - PAD * 2);
+  const y = v => H - PAD - (v / peak) * (H - PAD * 2);
+  const pts = all.map((v, i) => x(i).toFixed(1) + " " + y(v).toFixed(1));
+  const line = "M" + pts.join(" L");
+  const area = line + " L" + x(all.length - 1).toFixed(1) + " " + (H - PAD) + " L" + PAD + " " + (H - PAD) + " Z";
+  const by = y(openMed).toFixed(1);
+  return '<svg class="spark" viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+    '<path class="spark-area" d="' + area + '"></path>' +
+    '<line class="spark-base" x1="' + PAD + '" y1="' + by + '" x2="' + (W - PAD) + '" y2="' + by + '" vector-effect="non-scaling-stroke"></line>' +
+    '<path class="spark-line" d="' + line + '" vector-effect="non-scaling-stroke"></path>' +
+    '<line class="spark-end" x1="' + x(all.length - 1).toFixed(1) + '" y1="' + PAD + '" x2="' + x(all.length - 1).toFixed(1) + '" y2="' + (H - PAD) + '" vector-effect="non-scaling-stroke"></line>' +
+    "</svg>";
+}
+
+function viewDebrief(score) {
+  const r = S.res;
+  const all = S.rtLog.map(v => v.ms);
+  const third = Math.max(2, Math.ceil(all.length / 3));
+  const open = median(all.slice(0, third)), close = median(all.slice(-third));
+  const d = all.length >= 6 ? close - open : 0;
+
+  const lede = d < -40 ? "Sharper than when you sat down."
+             : d > 40  ? "Slower than your opening pace."
+             : "Steady the whole way through.";
+  const line = d < -40
+    ? "Go straight at the hardest thing on your list &mdash; the lift fades in roughly half an hour."
+    : d > 40
+    ? "Reaction time drifted up, which usually means sleep pressure rather than effort. A short walk will beat a second session."
+    : "No drift in either direction. You were already warm; pick up where you left off.";
+
+  const wrap = el("div", "debrief");
+
+  const head = el("div", "db-head");
+  const hl = el("div");
+  hl.appendChild(el("div", "eyebrow", "Debrief &middot; " + S.minutes + " min &middot; composite " + score));
+  hl.appendChild(el("div", "lede", lede));
+  const warm = el("div", "db-warm");
+  warm.innerHTML = '<div class="big">' + (d > 0 ? "+" : d < 0 ? "\u2212" : "") + Math.abs(d) +
+    '<span style="font-size:13px;color:var(--dim)"> ms</span></div>' +
+    '<div class="lab">Response time, open &rarr; close</div>';
+  head.appendChild(hl); head.appendChild(warm);
+  wrap.appendChild(head);
+
+  if (all.length >= 6) {
+    const fig = el("div", "spark-fig");
+    const top = el("div", "spark-top");
+    top.innerHTML = '<span class="spark-lab">Every correct response &middot; peak ' + Math.max(...all) + ' ms</span>' +
+                    '<span class="spark-lab">opening ' + open + " &rarr; closing " + close + " ms</span>";
+    fig.appendChild(top);
+    fig.insertAdjacentHTML("beforeend", sparkline(all, open));
+    fig.appendChild(el("div", "spark-lab", "Flat rule marks your opening median &mdash; time runs left to right."));
+    wrap.appendChild(fig);
+  }
+
+  const rows = [
+    { nm: "Inhibitory control", sub: r.stroop.n ? "Stroop &middot; " + median(r.stroop.rts) + " ms median over " + r.stroop.n + " trials" : "Stroop &middot; not reached",
+      v: r.stroop.n ? Math.round(r.stroop.hit / r.stroop.n * 100) + "<em>%</em>" : "&mdash;", m: r.stroop.n ? r.stroop.hit / r.stroop.n : 0 },
+    { nm: "Visuospatial span", sub: r.corsi.n ? "Corsi &middot; " + r.corsi.n + " sequences, " + r.corsi.hit + " clean" : "Corsi &middot; not reached",
+      v: r.corsi.best ? r.corsi.best + "<em> cells</em>" : "&mdash;", m: clamp(r.corsi.best / 9, 0, 1) },
+    { nm: "Spatial reasoning", sub: r.rotate.n ? "Mental rotation &middot; " + median(r.rotate.rts) + " ms median over " + r.rotate.n + " trials" : "Mental rotation &middot; not reached",
+      v: r.rotate.n ? Math.round(r.rotate.hit / r.rotate.n * 100) + "<em>%</em>" : "&mdash;", m: r.rotate.n ? r.rotate.hit / r.rotate.n : 0 },
+    { nm: "Working memory", sub: r.nback.targets ? "N&#8209;back &middot; " + r.nback.caught + " of " + r.nback.targets + " targets, " + r.nback.fa + " false alarms" : "N&#8209;back &middot; not reached",
+      v: r.nback.targets ? r.nback.peak + "<em>-back</em>" : "&mdash;", m: r.nback.targets ? clamp(r.nback.caught / r.nback.targets, 0, 1) : 0 },
+    { nm: "Numeric fluency", sub: r.chain.n ? "Operator chain &middot; " + Math.round(r.chain.hit / r.chain.n * 100) + "% of " + r.chain.n + " chains solved" : "Operator chain &middot; not reached",
+      v: r.chain.longest ? r.chain.longest + "<em> ops</em>" : "&mdash;", m: clamp(r.chain.longest / 6, 0, 1) },
+  ];
+  const ul = el("ul", "scores");
+  rows.forEach(row => {
+    const li = el("li");
+    li.innerHTML = '<span class="sc-nm">' + row.nm + "<span>" + row.sub + "</span></span>" +
+      '<span class="sc-v">' + row.v + "</span>" +
+      '<span class="meter"><i class="' + (row.m ? "" : "thin") + '" style="width:' + Math.round(clamp(row.m, .02, 1) * 100) + '%"></i></span>';
+    ul.appendChild(li);
+  });
+  wrap.appendChild(ul);
+
+  const foot = el("div", "db-foot");
+  foot.appendChild(el("div", "db-line", line));
+  const btns = el("div"); btns.style.display = "flex"; btns.style.gap = "9px";
+  const again = el("button", "btn-ghost", "Run it again");
+  again.onclick = begin;
+  const done = el("button", "btn", "Back to work");
+  done.onclick = viewRest;
+  btns.appendChild(again); btns.appendChild(done);
+  foot.appendChild(btns);
+  wrap.appendChild(foot);
+
+  stage.replaceChildren(wrap);
+  setKeys('<kbd>Space</kbd> run another', '<span class="mono">composite ' + score + "</span>");
+  live = { key(e) { if (e.code === "Space") { e.preventDefault(); begin(); } } };
+}
+
+async function finish() {
+  S.phase = "done";
+  clearTimers();
+  if (live && live.destroy) live.destroy();
+  live = null;
+  clock.classList.remove("cool");
+  clockArc.setAttribute("stroke-dashoffset", 0);
+  clockTime.textContent = "0:00";
+  railTag.textContent = "Session complete";
+  railName.textContent = "Debrief";
+  railMetricLab.textContent = "Composite";
+
+  const score = composite();
+  railMetric.innerHTML = score + '<span class="unit">/100</span>';
+  const r = S.res;
+  const trials = r.stroop.n + r.corsi.n + r.rotate.n + r.nback.n + r.chain.n;
+  if (trials > 0) {
+    history.push({ at: Date.now(), minutes: S.minutes, score, trials,
+      stroop: r.stroop.n ? Math.round(r.stroop.hit / r.stroop.n * 100) : null,
+      span: r.corsi.best || null, peakN: r.nback.targets ? r.nback.peak : null,
+      chain: r.chain.longest || null,
+      medianMs: S.rtLog.length ? median(S.rtLog.map(v => v.ms)) : null });
+    Store.save(history, seen);
+  }
+  viewDebrief(score);
+}
+
+/* ============================================================
+   PAUSE
+   ============================================================ */
+function togglePause() {
+  if (!S || S.phase === "idle" || S.phase === "done") return;
+  if (S.phase === "running") {
+    S.phase = "paused";
+    S.pausedAt = performance.now();
+    clearTimers();
+    const left = Math.max(0, S.total - elapsed());
+    const veil = el("div", "veil");
+    veil.appendChild(el("div", "eyebrow", "Paused"));
+    veil.appendChild(el("div", "lede", fmtDur(Math.round(left)) + " left in the protocol."));
+    veil.appendChild(el("div", "sub", "The current block restarts from a fresh trial. Everything you have already scored is kept."));
+    const row = el("div"); row.style.display = "flex"; row.style.gap = "9px";
+    const res = el("button", "btn", "Resume");
+    res.onclick = togglePause;
+    const ab = el("button", "btn-ghost", "End session");
+    ab.onclick = () => { S.phase = "running"; finish(); };
+    row.appendChild(res); row.appendChild(ab);
+    veil.appendChild(row);
+    stage.appendChild(veil);
+    setKeys('<kbd>Esc</kbd> resume', "");
+    live = { key(e) { if (e.code === "Space") { e.preventDefault(); togglePause(); } } };
+  } else {
+    const dt = performance.now() - S.pausedAt;
+    S.t0 += dt; S.blockT0 += dt;
+    S.phase = "running";
+    clearTimers();
+    if (live && live.destroy) live.destroy();
+    const b = S.blocks[S.bi];
+    clock.classList.toggle("cool", b.task === "downshift");
+    paintRail();
+    live = TASKS[b.task](b);
+  }
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function onKey(e) {
+  if (e.key === "Escape") { e.preventDefault(); togglePause(); return; }
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+  if (live && live.key) live.key(e);
+}
+
+(async function boot() {
+  viewRest();
+  loop();
+  document.addEventListener("keydown", onKey);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && S && S.phase === "running") togglePause();
+  });
+  await Store.init();
+  const loaded = await Store.load();
+  history = loaded.sessions; seen = loaded.seen;
+  if (S && S.phase === "idle") {
+    paintRail();
+    const h = document.querySelector(".hist");
+    if (h) h.replaceWith(historyBlock());
+  }
+})();
+</script>

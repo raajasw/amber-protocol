@@ -1,0 +1,7 @@
+# built artefacts
+*.icns
+*.iconset/
+Amber Protocol.app/
+out/
+
+.DS_Store
