@@ -1,9 +1,7 @@
 #!/bin/sh
 # Build "Amber Protocol.app" -- a double-clickable launcher for the page.
 #
-# The launcher serves the file on a loopback port rather than opening it as a
-# file:// URL, so the browser gives it a stable origin and therefore keeps your
-# streak and scores in localStorage between runs.
+# The app holds its own copy of the HTML, so re-run this after editing the page.
 #
 #   ./tools/make-app.sh [destination]     # default: ~/Desktop
 set -e
@@ -11,7 +9,6 @@ set -e
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 DEST=${1:-$HOME/Desktop}
 APP="$DEST/Amber Protocol.app"
-PORT=8742
 
 [ -d "$DEST" ] || { echo "no such directory: $DEST" >&2; exit 1; }
 
@@ -41,33 +38,17 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-cat > "$APP/Contents/MacOS/launch" <<LAUNCH
+cat > "$APP/Contents/MacOS/launch" <<'LAUNCH'
 #!/bin/sh
-PORT=$PORT
-LAUNCH
-cat >> "$APP/Contents/MacOS/launch" <<'LAUNCH'
-URL="http://127.0.0.1:$PORT/index.html"
-RES=$(cd "$(dirname "$0")/../Resources" && pwd)
-
-alive() { curl -fsS -o /dev/null --max-time 1 "$URL"; }
-
-# An instance is already serving: just bring up another window and step aside.
-if alive; then exec open "$URL"; fi
-
-cd "$RES" || exit 1
-python3 -m http.server "$PORT" --bind 127.0.0.1 >/dev/null 2>&1 &
-SRV=$!
-trap 'kill "$SRV" 2>/dev/null' EXIT INT TERM
-
-n=0
-while ! alive; do
-  n=$((n + 1))
-  [ "$n" -gt 40 ] && exit 1
-  sleep 0.25
-done
-
-open "$URL"
-wait "$SRV"      # the app stays running -- quit it to stop the server
+# Hand the page to the default browser and get out of the way.
+#
+# Deliberately no local web server: serving it would give localStorage a
+# stable origin, but it also makes macOS prompt about python3 accepting
+# network connections, and it leaves a process running. A file:// hand-off
+# has no dependencies, no prompt, and nothing to quit. Absolute path to
+# open(1) because a Finder-launched app gets a minimal PATH.
+RES=$(cd "$(dirname "$0")/../Resources" && pwd) || exit 1
+exec /usr/bin/open "$RES/index.html"
 LAUNCH
 
 chmod +x "$APP/Contents/MacOS/launch"

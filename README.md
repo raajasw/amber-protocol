@@ -57,12 +57,23 @@ Open `amber-protocol.html` in a browser, or build the macOS launcher:
 ./tools/make-app.sh /Applications
 ```
 
-The launcher serves the page on `127.0.0.1:8742` rather than opening a `file://`
-URL, so the browser gives it a stable origin and keeps your streak and scores in
-`localStorage`. The app stays running while you play — quit it to stop the
-server. `tools/make-icon.py` renders the icon (slate panel, amber clock ring)
-from signed distance fields into hand-written PNGs, then `iconutil` assembles
-the `.icns`; it is pure stdlib.
+The launcher hands the file straight to your default browser and exits — no
+local server, no dependencies, nothing left running. An earlier version served
+the page on a loopback port to give `localStorage` a stable origin, but that
+made macOS prompt about `python3` accepting network connections, which is a
+poor trade for a relaxation app.
+
+The consequence is that a locally-opened copy stores progress under a `file://`
+origin, and some browsers drop those writes. The page probes storage on load and
+says so on the opening screen if nothing will persist — use the hosted link if
+you want a streak that builds.
+
+`tools/make-icon.py` renders the icon (slate panel, amber clock ring) from
+signed distance fields into hand-written PNGs, then `iconutil` assembles the
+`.icns`; it is pure stdlib.
+
+The app holds its **own copy** of the HTML, so re-run `make-app.sh` after
+editing the page.
 
 ## Changing the protocol
 

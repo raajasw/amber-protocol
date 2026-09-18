@@ -620,9 +620,18 @@ function setKeys(left, right) { keyline.innerHTML = left || ""; keylineR.innerHT
    ============================================================ */
 const Store = {
   db: null,
+  mode: "none",          // "db" | "local" | "none" -- what will actually persist
   async init() {
     try { this.db = (window.claude && claude.use) ? await claude.use("db") : null; }
     catch (e) { this.db = null; }
+    if (this.db) { this.mode = "db"; return; }
+    // Some browsers hand a local file a storage object that silently drops
+    // writes, so probe it rather than assume.
+    try {
+      localStorage.setItem("amber.probe", "1");
+      this.mode = localStorage.getItem("amber.probe") === "1" ? "local" : "none";
+      localStorage.removeItem("amber.probe");
+    } catch (e) { this.mode = "none"; }
   },
   async load() {
     if (this.db) {
@@ -786,9 +795,13 @@ function historyBlock() {
   }
   row.appendChild(left); row.appendChild(bars);
   h.appendChild(row);
-  h.appendChild(el("div", "hist-note", last.length
-    ? "Bar height is the composite across all five faculties."
-    : "Nothing logged yet &mdash; this run becomes your baseline."));
+  h.appendChild(el("div", "hist-note",
+    Store.mode === "none"
+      ? "This browser will not keep scores for a local file, so nothing here will build up. " +
+        "Open the hosted link instead if you want a streak."
+      : last.length
+      ? "Bar height is the composite across all five faculties."
+      : "Nothing logged yet &mdash; this run becomes your baseline."));
   return h;
 }
 
