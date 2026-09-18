@@ -5,3 +5,6 @@ Amber Protocol.app/
 out/
 
 .DS_Store
+
+# local preview config
+.claude/

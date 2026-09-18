@@ -25,8 +25,11 @@ adapts to your accuracy so it sits just past comfortable.
 | 06 | **N-back** | Working memory — press on a match N places back |
 | 07 | **Operator chain** | Numeric fluency — hold a running total under load |
 
-Blocks 01, 04 and 08 are **Downshift**: 4-4-4-4 box breathing, the only
-cool-hued screen in the app.
+Blocks 01, 04 and 08 are **Downshift**: paced breathing, four seconds in and
+six out, the only cool-hued screen in the app. That ten-second cycle is six
+breaths a minute, which is roughly where the slow-breathing literature centres;
+box breathing at 4-4-4-4 is better known but a slower sixteen-second cycle with
+less behind it.
 
 Speeded tasks show a countdown bar for the trial and open at a deliberate pace
 (Stroop at 4 s, rotation at 11 s), tightening only after a run of correct
@@ -39,6 +42,48 @@ recognising a silhouette.
 `1`–`4` Stroop colours · `J`/`K` same or mirrored · `Space` n-back match and
 skip a rule card · digits + `Enter` operator chain · `Esc` pause. Switching tabs
 pauses automatically.
+
+## What the evidence actually supports
+
+Worth stating plainly, because the brain-training industry does not.
+
+**Near transfer is real.** Practise these tasks and you will get better at them.
+The adaptive ceilings — Corsi span, n-back level, chain length — will rise.
+
+**Far transfer is not.** Improvement on trained tasks spreading to general
+reasoning or day-to-day work has repeatedly failed to replicate:
+
+- **Owen et al. (2010, _Nature_)** trained 11,430 people for six weeks. Gains on
+  the trained tasks, no transfer to untrained ones.
+- **Jaeggi et al. (2008, _PNAS_)** is the study that made n-back famous by
+  claiming gains in fluid intelligence. **Redick et al. (2013)** and the
+  meta-analysis of **Melby-Lervåg, Redick & Hulme (2016)**, both using proper
+  active controls, found no convincing far transfer.
+- **Simons et al. (2016, _Psychological Science in the Public Interest_)**
+  reviewed the field and found the evidence for real-world benefit weak, with
+  most positive results lacking active control groups.
+- A 2014 consensus statement signed by ~70 cognitive scientists (Stanford Center
+  on Longevity / Max Planck Institute) rejected industry claims. Lumosity settled
+  with the FTC for $2M in 2016 over the same advertising.
+
+So this is a **warm-up, not training**. A warm-up does not make an athlete
+stronger; it makes them ready to perform in the next hour. That narrower claim
+rests on firmer ground:
+
+- **Sleep inertia** is well documented (Tassi & Muzet, 2000), and effortful
+  cognitive engagement dissipates it faster than waiting it out.
+- **Reaction time is a validated alertness marker** — the Psychomotor Vigilance
+  Task (Dinges & Powell, 1985) is the standard instrument in sleep research. The
+  open→close comparison here is a crude version of a legitimate measure.
+- **Slow paced breathing** has reasonable support for shifting autonomic balance
+  and lowering self-reported stress (Zaccaro et al., 2018, systematic review).
+
+If drowsiness is the real problem, a **10–20 minute nap**, **bright light** and
+**physical movement** all have better evidence than cognitive tasks. This is for
+when you cannot do those.
+
+The Progress screen is built around this distinction: it charts the alertness
+delta, and labels the task ceilings as the near transfer they are.
 
 ## What the debrief tells you
 
@@ -86,6 +131,15 @@ Per-task difficulty lives in each `task*` function: opening deadlines, how fast
 they tighten, and the floors and ceilings.
 
 ## Progress
+
+Each finished session records its timestamp, length, composite score, trial
+count, Stroop accuracy, best Corsi span, peak n-back level, longest chain, median
+response time, and the opening/closing medians behind the alertness delta. The
+last 40 are kept.
+
+The Progress screen charts one bar per session against a zero line: below it you
+finished faster than you opened, above it slower, and a flat tick means too few
+responses to measure.
 
 Published as a Claude Artifact, the page stores sessions in the artifact's `db`
 so progress follows you across devices. Anywhere else it falls back to

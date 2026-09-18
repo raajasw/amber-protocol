@@ -514,6 +514,63 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
 .primer-go{display:flex;align-items:center;gap:13px;margin-top:3px}
 .primer-wait{flex:1;height:2px;background:var(--inset);border-radius:2px;overflow:hidden}
 .primer-wait i{display:block;height:100%;width:0;background:var(--faint)}
+/* ---------- progress: did these sessions actually wake you up? ---------- */
+.progress{flex:1;display:flex;flex-direction:column;gap:17px}
+.pg-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.pg-big{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:29px;font-weight:500;line-height:1;font-variant-numeric:tabular-nums;text-align:right;
+}
+.pg-plot{display:flex;gap:11px;align-items:stretch}
+.pg-axis{
+  width:56px;flex:none;display:flex;flex-direction:column;justify-content:space-between;
+  text-align:right;font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums;
+}
+.pg-bars{
+  flex:1;min-width:0;height:148px;display:flex;gap:3px;position:relative;
+  background:var(--inset);border-radius:3px;padding:0 4px;
+}
+.pg-bars::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.pg-col{flex:1;min-width:2px;display:grid;grid-template-rows:1fr 1fr;position:relative}
+.pg-up{display:flex;align-items:flex-end}
+.pg-dn{display:flex;align-items:flex-start}
+.pg-up i,.pg-dn i{display:block;width:100%;border-radius:1px}
+.pg-up i{background:var(--no)}
+.pg-dn i{background:var(--go)}
+.pg-col.void::after{
+  content:"";position:absolute;left:0;right:0;top:50%;height:3px;
+  margin-top:-1px;background:var(--line);border-radius:2px;
+}
+.pg-legend{display:flex;gap:17px;flex-wrap:wrap;font-size:11.5px;color:var(--dim)}
+.pg-legend span{display:flex;align-items:center;gap:6px}
+.pg-legend i{width:10px;height:10px;border-radius:2px;display:block;flex:none}
+.pg-tab{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.pg-tab li{
+  display:grid;grid-template-columns:1fr 62px 62px;gap:14px;
+  align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line-soft);
+}
+.pg-tab li:last-child{border-bottom:none}
+.pg-tab li.h{
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
+  border-bottom:1px solid var(--line);padding-bottom:5px;
+}
+.pg-tab .v{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:13px;text-align:right;font-variant-numeric:tabular-nums;
+}
+.pg-tab li.h .v{font-family:"Chivo",sans-serif;font-size:10px}
+.pg-tab .nm span{display:block;font-size:11px;color:var(--dim)}
+.pg-caveat{
+  border-left:2px solid var(--line);padding:11px 15px;
+  font-size:12px;color:var(--dim);line-height:1.6;
+}
+.pg-caveat b{color:var(--text);font-weight:500}
+.pg-foot{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:auto;align-items:center}
+@media (max-width:660px){
+  .pg-axis{width:44px}
+  .pg-tab li{grid-template-columns:1fr 54px 54px;gap:8px}
+}
 .match-btn{
   padding:11px 26px;border:1px solid var(--line);border-radius:3px;background:var(--inset);
   font-weight:700;font-size:13px;letter-spacing:.04em;
@@ -748,7 +805,14 @@ function viewRest() {
 
   const start = el("button", "btn", "Begin session");
   start.onclick = begin;
-  const startRow = el("div"); startRow.appendChild(start);
+  const startRow = el("div");
+  startRow.style.display = "flex"; startRow.style.gap = "9px"; startRow.style.alignItems = "center";
+  startRow.appendChild(start);
+  if (history.length) {
+    const pg = el("button", "btn-ghost", "Progress");
+    pg.onclick = viewProgress;
+    startRow.appendChild(pg);
+  }
   lhs.appendChild(startRow);
 
   const rhs = el("div");
@@ -1335,15 +1399,20 @@ function taskChain() {
 }
 
 /* ============================================================
-   DOWNSHIFT  ·  4-4-4-4 box breathing, the only cool-hued view
+   DOWNSHIFT  ·  paced breathing, the only cool-hued view
+   Four in, six out: a ten-second cycle, so six breaths a minute.
+   That is the rate the slow-breathing literature centres on, and the
+   long exhale is the half that shifts autonomic balance. (Box
+   breathing at 4-4-4-4 is a sixteen-second cycle -- slower, better
+   known, and less well supported.)
    ============================================================ */
-const PHASES = [["Breathe in", 4, 1], ["Hold", 4, 1], ["Breathe out", 4, .62], ["Hold", 4, .62]];
+const PHASES = [["Breathe in", 4, 1], ["Breathe out", 6, .62]];
 function taskDownshift(block) {
   const idx = S.blocks.filter(b => b.task === "downshift" && b.i < block.i).length;
   const total = S.blocks.filter(b => b.task === "downshift").length;
   const notes = [
     "Nothing is scored here. Let the count hold your attention while your breathing slows.",
-    "Long exhale. That half of the cycle is the part that does the work.",
+    "Stay with the out-breath. The long exhale is the half that does the work.",
     "That is the session. Keep this pace for your first ten minutes back at the keyboard.",
   ];
   const note = idx === 0 ? notes[0] : (idx === total - 1 ? notes[2] : notes[1]);
@@ -1358,7 +1427,7 @@ function taskDownshift(block) {
   wrap.appendChild(ring);
   wrap.appendChild(el("div", "breathe-note", note));
   stage.replaceChildren(wrap);
-  setKeys("Follow the ring &mdash; in four, hold four, out four, hold four",
+  setKeys("Follow the ring &mdash; in for four, out for six. Six breaths a minute.",
           '<span class="mono">' + fmtDur(block.dur) + "</span>");
 
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1383,6 +1452,17 @@ const TASKS = { stroop: taskStroop, corsi: taskCorsi, rotate: taskRotate, nback:
 /* ============================================================
    DEBRIEF
    ============================================================ */
+/* Median response over the opening third of a session against the closing
+   third. Crude, but it is the one number here with a defensible basis:
+   reaction time is the standard marker of alertness in sleep research. */
+function warmth(log) {
+  const all = log.map(v => v.ms);
+  const third = Math.max(2, Math.ceil(all.length / 3));
+  const enough = all.length >= 6;
+  const open = median(all.slice(0, third)), close = median(all.slice(-third));
+  return { all, open, close, delta: enough ? close - open : 0, enough };
+}
+
 function composite() {
   const r = S.res, p = [];
   if (r.stroop.n) p.push(r.stroop.hit / r.stroop.n);
@@ -1412,10 +1492,8 @@ function sparkline(all, openMed) {
 
 function viewDebrief(score) {
   const r = S.res;
-  const all = S.rtLog.map(v => v.ms);
-  const third = Math.max(2, Math.ceil(all.length / 3));
-  const open = median(all.slice(0, third)), close = median(all.slice(-third));
-  const d = all.length >= 6 ? close - open : 0;
+  const w = warmth(S.rtLog);
+  const all = w.all, open = w.open, close = w.close, d = w.delta;
 
   const lede = d < -40 ? "Sharper than when you sat down."
              : d > 40  ? "Slower than your opening pace."
@@ -1488,6 +1566,125 @@ function viewDebrief(score) {
   live = { key(e) { if (e.code === "Space") { e.preventDefault(); begin(); } } };
 }
 
+function viewProgress() {
+  S = freshState(chosenMinutes);
+  S.phase = "idle";
+  clock.classList.remove("cool");
+  paintRail(); paintClock();
+
+  const SHOW = 20;
+  const recent = history.slice(-SHOW);
+  const scored = recent.filter(x => typeof x.deltaMs === "number");
+  const woke = scored.filter(x => x.deltaMs <= -40).length;
+
+  const wrap = el("div", "progress");
+  const head = el("div", "pg-head");
+  const hl = el("div");
+  hl.appendChild(el("div", "eyebrow", "Progress &middot; last " + recent.length +
+    (history.length > SHOW ? " of " + history.length : "") + " sessions"));
+  hl.appendChild(el("div", "lede", scored.length
+    ? woke + " of " + scored.length + (scored.length === 1 ? " session left you" : " sessions left you") +
+      " faster than you started."
+    : "Nothing measured yet."));
+  head.appendChild(hl);
+
+  if (scored.length) {
+    const med = median(scored.map(x => Math.abs(x.deltaMs))) * (median(scored.map(x => x.deltaMs)) < 0 ? -1 : 1);
+    const right = el("div");
+    right.innerHTML = '<div class="pg-big">' + (med > 0 ? "+" : med < 0 ? "\u2212" : "") + Math.abs(Math.round(med)) +
+      '<span style="font-size:13px;color:var(--dim)"> ms</span></div>' +
+      '<div class="lab" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:5px;text-align:right">Typical change per session</div>';
+    head.appendChild(right);
+  }
+  wrap.appendChild(head);
+
+  if (scored.length) {
+    const scale = Math.max(120, ...scored.map(x => Math.abs(x.deltaMs)));
+    const plot = el("div", "pg-plot");
+    const axis = el("div", "pg-axis");
+    axis.innerHTML = "<span>+" + scale + " ms</span><span>0</span><span>\u2212" + scale + " ms</span>";
+    const bars = el("div", "pg-bars");
+    recent.forEach(x => {
+      const col = el("div", "pg-col");
+      const up = el("div", "pg-up"), dn = el("div", "pg-dn");
+      if (typeof x.deltaMs !== "number") {
+        col.classList.add("void");
+        col.title = new Date(x.at).toLocaleDateString() + " \u00B7 too few responses to measure";
+      } else {
+        const h = Math.min(100, Math.abs(x.deltaMs) / scale * 100);
+        const bar = el("i");
+        bar.style.height = Math.max(2, h) + "%";
+        (x.deltaMs <= 0 ? dn : up).appendChild(bar);
+        col.title = new Date(x.at).toLocaleDateString() + " \u00B7 " +
+          x.openMs + " \u2192 " + x.closeMs + " ms (" +
+          (x.deltaMs > 0 ? "+" : "") + x.deltaMs + ")";
+      }
+      col.appendChild(up); col.appendChild(dn);
+      bars.appendChild(col);
+    });
+    plot.appendChild(axis); plot.appendChild(bars);
+    wrap.appendChild(plot);
+
+    const leg = el("div", "pg-legend");
+    leg.innerHTML =
+      '<span><i style="background:var(--go)"></i>Below the line &mdash; you finished faster than you opened</span>' +
+      '<span><i style="background:var(--no)"></i>Above &mdash; you finished slower</span>' +
+      '<span><i style="background:var(--line)"></i>Too few responses to measure</span>';
+    wrap.appendChild(leg);
+  } else {
+    const empty = el("div", "pg-caveat");
+    empty.innerHTML = "Each finished session times every correct response and compares the median of " +
+      "your opening third against your closing third. That difference lands here, one bar per " +
+      "session, so you can see whether these twelve minutes reliably wake you up &mdash; or " +
+      "whether some days they do not. <b>Run a full session to start the record.</b>";
+    wrap.appendChild(empty);
+  }
+
+  // Ceilings: honest about being near transfer.
+  const best = (f, cmp) => { const v = history.map(x => x[f]).filter(x => typeof x === "number");
+    return v.length ? (cmp === "max" ? Math.max(...v) : Math.min(...v)) : null; };
+  const latest = f => { for (let i = history.length - 1; i >= 0; i--)
+    if (typeof history[i][f] === "number") return history[i][f]; return null; };
+  const fmt = (v, suf) => v === null ? "&mdash;" : v + (suf || "");
+
+  const tab = el("ul", "pg-tab");
+  const hdr = el("li", "h");
+  hdr.innerHTML = '<span>Task ceilings</span><span class="v">Best</span><span class="v">Latest</span>';
+  tab.appendChild(hdr);
+  [["Corsi span", "span", "max", " cells"], ["N-back level", "peakN", "max", "-back"],
+   ["Operator chain", "chain", "max", " ops"], ["Stroop accuracy", "stroop", "max", "%"]]
+    .forEach(([nm, f, cmp, suf]) => {
+      const li = el("li");
+      li.innerHTML = '<span class="nm">' + nm + "</span>" +
+        '<span class="v">' + fmt(best(f, cmp), suf) + "</span>" +
+        '<span class="v">' + fmt(latest(f), suf) + "</span>";
+      tab.appendChild(li);
+    });
+  wrap.appendChild(tab);
+
+  const cav = el("div", "pg-caveat");
+  cav.innerHTML = "Those ceilings rise because you are practising these five tasks, and that is all " +
+    "they show. <b>Getting better at n-back makes you better at n-back.</b> Large trials &mdash; " +
+    "Owen 2010 in Nature, the Simons 2016 review &mdash; found this kind of training does not " +
+    "transfer to general reasoning or day-to-day work. The chart above is the honest measure: " +
+    "not whether you are getting smarter, but whether a session clears the fog well enough to " +
+    "go back to work.";
+  wrap.appendChild(cav);
+
+  const foot = el("div", "pg-foot");
+  const back = el("button", "btn-ghost", "Back");
+  back.onclick = viewRest;
+  const run = el("button", "btn", "Begin session");
+  run.onclick = begin;
+  foot.appendChild(back); foot.appendChild(run);
+  wrap.appendChild(foot);
+
+  stage.replaceChildren(wrap);
+  setKeys('<kbd>Space</kbd> begin a session <span class="sep">/</span> <kbd>Esc</kbd> back',
+          '<span class="mono">' + history.length + " logged</span>");
+  live = { key(e) { if (e.code === "Space") { e.preventDefault(); begin(); } } };
+}
+
 async function finish() {
   S.phase = "done";
   clearTimers();
@@ -1502,14 +1699,17 @@ async function finish() {
 
   const score = composite();
   railMetric.innerHTML = score + '<span class="unit">/100</span>';
-  const r = S.res;
+  const r = S.res, w = warmth(S.rtLog);
   const trials = r.stroop.n + r.corsi.n + r.rotate.n + r.nback.n + r.chain.n;
   if (trials > 0) {
     history.push({ at: Date.now(), minutes: S.minutes, score, trials,
       stroop: r.stroop.n ? Math.round(r.stroop.hit / r.stroop.n * 100) : null,
       span: r.corsi.best || null, peakN: r.nback.targets ? r.nback.peak : null,
       chain: r.chain.longest || null,
-      medianMs: S.rtLog.length ? median(S.rtLog.map(v => v.ms)) : null });
+      medianMs: S.rtLog.length ? median(S.rtLog.map(v => v.ms)) : null,
+      openMs: w.enough ? w.open : null,
+      closeMs: w.enough ? w.close : null,
+      deltaMs: w.enough ? w.delta : null });
     Store.save(history, seen);
   }
   viewDebrief(score);
@@ -1556,7 +1756,11 @@ function togglePause() {
    BOOT
    ============================================================ */
 function onKey(e) {
-  if (e.key === "Escape") { e.preventDefault(); togglePause(); return; }
+  if (e.key === "Escape") {
+    e.preventDefault();
+    if (S && S.phase === "idle") viewRest(); else togglePause();
+    return;
+  }
   const t = e.target;
   if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
   if (live && live.key) live.key(e);
@@ -1572,10 +1776,6 @@ function onKey(e) {
   await Store.init();
   const loaded = await Store.load();
   history = loaded.sessions; seen = loaded.seen;
-  if (S && S.phase === "idle") {
-    paintRail();
-    const h = document.querySelector(".hist");
-    if (h) h.replaceWith(historyBlock());
-  }
+  if (S && S.phase === "idle") viewRest();
 })();
 </script>
