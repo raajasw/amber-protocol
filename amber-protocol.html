@@ -529,9 +529,16 @@ button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
 }
 .pg-bars{
   flex:1;min-width:0;height:148px;display:flex;gap:3px;position:relative;
-  background:var(--inset);border-radius:3px;padding:0 4px;
+  background:var(--inset);border-radius:3px;overflow:hidden;
 }
 .pg-bars::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.pg-trend{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.pg-trend polyline{
+  fill:none;stroke:var(--amber);stroke-width:1.75;
+  stroke-linejoin:round;stroke-linecap:round;
+}
+.pg-legend i.line{height:2px;border-radius:1px;background:var(--amber)}
+.pg-note{font-size:12px;color:var(--dim);margin-top:8px;max-width:52ch}
 .pg-col{flex:1;min-width:2px;display:grid;grid-template-rows:1fr 1fr;position:relative}
 .pg-up{display:flex;align-items:flex-end}
 .pg-dn{display:flex;align-items:flex-start}
@@ -1566,6 +1573,24 @@ function viewDebrief(score) {
   live = { key(e) { if (e.code === "Space") { e.preventDefault(); begin(); } } };
 }
 
+/* Centred rolling median. One session's delta moves with sleep, caffeine and
+   time of day more than with the protocol, so the bars alone are mostly noise;
+   this is the line you can actually read a trend off. Sessions with no measure
+   drop out of the window rather than counting as zero. */
+function rollingMedian(vals, win) {
+  const half = Math.floor(win / 2);
+  return vals.map((_, i) => {
+    const w = [];
+    for (let j = Math.max(0, i - half); j <= Math.min(vals.length - 1, i + half); j++) {
+      if (typeof vals[j] === "number") w.push(vals[j]);
+    }
+    return w.length ? median(w) : null;
+  });
+}
+
+const TREND_WIN = 5;   // sessions per window
+const MIN_CALL  = 5;   // before this, the headline declines to draw a conclusion
+
 function viewProgress() {
   S = freshState(chosenMinutes);
   S.phase = "idle";
@@ -1582,18 +1607,26 @@ function viewProgress() {
   const hl = el("div");
   hl.appendChild(el("div", "eyebrow", "Progress &middot; last " + recent.length +
     (history.length > SHOW ? " of " + history.length : "") + " sessions"));
-  hl.appendChild(el("div", "lede", scored.length
-    ? woke + " of " + scored.length + (scored.length === 1 ? " session left you" : " sessions left you") +
-      " faster than you started."
-    : "Nothing measured yet."));
+  const enoughToCall = scored.length >= MIN_CALL;
+  hl.appendChild(el("div", "lede",
+    !scored.length      ? "Nothing measured yet."
+    : !enoughToCall     ? "Too few sessions to call it yet."
+    : woke + " of " + scored.length + " sessions left you faster than you started."));
+  if (scored.length && !enoughToCall) {
+    hl.appendChild(el("div", "pg-note",
+      woke + " of " + scored.length + " so far. A single session's delta moves with sleep, " +
+      "caffeine and time of day more than with the protocol &mdash; around " + MIN_CALL +
+      " sessions in, the pattern starts to be worth reading."));
+  }
   head.appendChild(hl);
 
   if (scored.length) {
-    const med = median(scored.map(x => Math.abs(x.deltaMs))) * (median(scored.map(x => x.deltaMs)) < 0 ? -1 : 1);
+    const med = median(scored.map(x => x.deltaMs));
     const right = el("div");
     right.innerHTML = '<div class="pg-big">' + (med > 0 ? "+" : med < 0 ? "\u2212" : "") + Math.abs(Math.round(med)) +
       '<span style="font-size:13px;color:var(--dim)"> ms</span></div>' +
-      '<div class="lab" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:5px;text-align:right">Typical change per session</div>';
+      '<div class="lab" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:5px;text-align:right">' +
+      (enoughToCall ? "Typical change per session" : "Typical change so far") + "</div>";
     head.appendChild(right);
   }
   wrap.appendChild(head);
@@ -1622,6 +1655,23 @@ function viewProgress() {
       col.appendChild(up); col.appendChild(dn);
       bars.appendChild(col);
     });
+    if (scored.length >= 4) {
+      const line = rollingMedian(recent.map(x => typeof x.deltaMs === "number" ? x.deltaMs : null), TREND_WIN);
+      const pts = [];
+      line.forEach((v, i) => {
+        if (v === null) return;
+        const x = (i + 0.5).toFixed(3);
+        const y = (50 - clamp(v / scale, -1, 1) * 50).toFixed(2);
+        pts.push(x + "," + y);
+      });
+      if (pts.length >= 2) {
+        // viewBox is one unit per column, 100 tall; stretched to fit, so the
+        // stroke is kept at its own width rather than scaled with the box.
+        bars.insertAdjacentHTML("beforeend",
+          '<svg class="pg-trend" viewBox="0 0 ' + recent.length + ' 100" preserveAspectRatio="none" aria-hidden="true">' +
+          '<polyline points="' + pts.join(" ") + '" vector-effect="non-scaling-stroke"></polyline></svg>');
+      }
+    }
     plot.appendChild(axis); plot.appendChild(bars);
     wrap.appendChild(plot);
 
@@ -1629,7 +1679,10 @@ function viewProgress() {
     leg.innerHTML =
       '<span><i style="background:var(--go)"></i>Below the line &mdash; you finished faster than you opened</span>' +
       '<span><i style="background:var(--no)"></i>Above &mdash; you finished slower</span>' +
-      '<span><i style="background:var(--line)"></i>Too few responses to measure</span>';
+      '<span><i style="background:var(--line)"></i>Too few responses to measure</span>' +
+      (scored.length >= 4
+        ? '<span><i class="line"></i>Rolling median of ' + TREND_WIN + " sessions</span>"
+        : "");
     wrap.appendChild(leg);
   } else {
     const empty = el("div", "pg-caveat");

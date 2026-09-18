@@ -139,7 +139,10 @@ last 40 are kept.
 
 The Progress screen charts one bar per session against a zero line: below it you
 finished faster than you opened, above it slower, and a flat tick means too few
-responses to measure.
+responses to measure. An amber rolling median over five sessions runs across the
+bars, because one session's delta moves with sleep, caffeine and time of day more
+than it does with the protocol. Under five measured sessions the headline says so
+rather than drawing a conclusion.
 
 Published as a Claude Artifact, the page stores sessions in the artifact's `db`
 so progress follows you across devices. Anywhere else it falls back to
