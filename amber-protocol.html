@@ -1040,12 +1040,18 @@ function taskStroop() {
     feedback(ok);
     if (ok) { streak++; if (streak >= 5) { dl = Math.max(1900, dl - 70); streak = 0; } }
     else { streak = 0; dl = Math.min(4500, dl + 250); tick.classList.add("warn"); }
-    // close on the answer: the ink's name, printed in the ink
-    hint.textContent = i < 0 ? "Ran out of time \u2014 that was " + SCOL[ink].n
-                     : ok    ? "Correct"
-                             : "That was " + SCOL[ink].n;
-    word.className = "stroop-word " + SCOL[ink].c;
-    word.textContent = SCOL[ink].n;
+    // The gap must not look like a trial. Showing the ink's name in the ink
+    // put a colour word in a colour at stimulus size and position -- and
+    // always congruent, the one pairing Stroop must never prime. Blank the
+    // stimulus and empty the bar instead, and let the hint carry the answer
+    // with the colour name tinted.
+    word.innerHTML = "&nbsp;";
+    word.className = "stroop-word";
+    tickFill.style.width = "0%";
+    const inInk = '<b class="' + SCOL[ink].c + '">' + SCOL[ink].n + "</b>";
+    hint.innerHTML = i < 0 ? "Ran out of time &mdash; that was " + inInk
+                   : ok    ? "Correct"
+                           : "That was " + inInk;
     after(ok ? 520 : 1100, trial);
   }
 
@@ -1239,6 +1245,7 @@ function taskRotate() {
     armed = false;
     clearTimeout(dlTimer);
     tickFill.style.transition = "none";
+    tickFill.style.width = "0%";     // empty bar: no trial is running
     const timedOut = saidMirror === null;
     const ok = !timedOut && saidMirror === mirrored;
     const rt = Math.round(performance.now() - t0);
