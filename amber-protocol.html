@@ -1006,7 +1006,7 @@ function taskStroop() {
 
   // Opens at four seconds a trial and tightens only after five straight, so the
   // window closes at the pace you actually speed up. The bar shows the time left.
-  let ink = 0, t0 = 0, armed = false, dl = 4000, streak = 0;
+  let ink = 0, t0 = 0, armed = false, dl = 4000, streak = 0, dlTimer = 0;
 
   function trial() {
     ink = rnd(4);
@@ -1024,12 +1024,16 @@ function taskStroop() {
       tickFill.style.width = "0%";
     });
     t0 = performance.now(); armed = true;
-    after(dl, () => { if (armed) answer(-1); });
+    clearTimeout(dlTimer);
+    dlTimer = after(dl, () => { if (armed) answer(-1); });
   }
 
   function answer(i) {
     if (!armed) return;
     armed = false;
+    // This trial's deadline must not outlive it: left pending, it fires during
+    // the NEXT trial -- which has re-armed -- and cuts that one off early.
+    clearTimeout(dlTimer);
     const ok = i === ink, rt = Math.round(performance.now() - t0);
     tickFill.style.transition = "none";
     record("stroop", ok, ok ? rt : 0);
@@ -1195,7 +1199,7 @@ function taskRotate() {
 
   // Rotation is deliberate work, not reflex: eleven seconds a trial, tightening
   // slowly, and the pair stays on screen after a miss so you can see the answer.
-  let mirrored = false, t0 = 0, armed = false, streak = 0, cellsN = 5, dl = 11000;
+  let mirrored = false, t0 = 0, armed = false, streak = 0, cellsN = 5, dl = 11000, dlTimer = 0;
 
   function trial() {
     const sh = genShape(cellsN);
@@ -1214,12 +1218,14 @@ function taskRotate() {
       tickFill.style.width = "0%";
     });
     t0 = performance.now(); armed = true;
-    after(dl, () => { if (armed) answer(null); });
+    clearTimeout(dlTimer);
+    dlTimer = after(dl, () => { if (armed) answer(null); });
   }
 
   function answer(saidMirror) {
     if (!armed) return;
     armed = false;
+    clearTimeout(dlTimer);
     tickFill.style.transition = "none";
     const timedOut = saidMirror === null;
     const ok = !timedOut && saidMirror === mirrored;
