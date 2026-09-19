@@ -1132,11 +1132,23 @@ const nrm = cs => { const mx = Math.min(...cs.map(c => c[0])), my = Math.min(...
   return cs.map(c => [c[0] - mx, c[1] - my]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(c => c.join(",")).join(";"); };
 const rot = cs => cs.map(([x, y]) => [-y, x]);
 const mir = cs => cs.map(([x, y]) => [-x, y]);
+/* Fisher-Yates. A .sort() comparator returning a random sign is not a shuffle:
+   it left some orderings twice as likely as others and picked one direction
+   first only 19% of the time instead of 25%, which skewed which figures came
+   up. A figure you keep seeing gets recognised rather than rotated, which is
+   the one thing this task must not allow. */
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
 function walk(n) {
   const cs = [[0, 0]], seen = new Set(["0,0"]);
   while (cs.length < n) {
     const f = cs[cs.length - 1];
-    const ds = [[1, 0], [-1, 0], [0, 1], [0, -1]].sort(() => Math.random() - .5);
+    const ds = shuffle([[1, 0], [-1, 0], [0, 1], [0, -1]]);
     let ok = false;
     for (const d of ds) { const c = [f[0] + d[0], f[1] + d[1]], k = c.join(",");
       if (!seen.has(k)) { cs.push(c); seen.add(k); ok = true; break; } }
