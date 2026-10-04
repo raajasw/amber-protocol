@@ -138,6 +138,17 @@ up, and the advice is to go straight at the hardest thing while it lasts. If it
 rose, that is sleep pressure rather than lack of effort, and a walk will beat a
 second session.
 
+<p align="center">
+  <img src="assets/debrief.png" width="760"
+       alt="The debrief screen: the headline reads Slower than your opening pace, with a plus 520 millisecond change, a sparkline of every correct response, and per-faculty results beneath">
+</p>
+
+This is the honest case, and the reason the screen exists: the session did not
+work. Response time rose **520 ms** between the opening and closing thirds, so
+the console says so and suggests a walk rather than another round, instead of
+congratulating you for showing up. The sparkline plots every correct response in
+order, and the five faculties are scored underneath.
+
 ## Running it
 
 Play it at **https://raajasw.github.io/amber-protocol/** — served from this
