@@ -11,6 +11,8 @@ next one. That is the whole design.
 
 Single HTML file, no build step, no dependencies beyond two Google Fonts.
 
+**Play it: https://raajasw.github.io/amber-protocol/**
+
 ## The tasks
 
 Instruments from the psychometric canon rather than invented puzzles. Each one
@@ -95,7 +97,11 @@ second session.
 
 ## Running it
 
-Open `amber-protocol.html` in a browser, or build the macOS launcher:
+Play it at **https://raajasw.github.io/amber-protocol/** — served from this
+repo by GitHub Pages, which gives the page a real origin, so your streak and
+scores persist between visits.
+
+Or open `index.html` locally, or build the macOS launcher:
 
 ```sh
 ./tools/make-app.sh              # -> ~/Desktop/Amber Protocol.app

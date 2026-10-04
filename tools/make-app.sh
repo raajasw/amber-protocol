@@ -16,7 +16,7 @@ echo "building $APP"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
-cp "$HERE/amber-protocol.html" "$APP/Contents/Resources/index.html"
+cp "$HERE/index.html" "$APP/Contents/Resources/index.html"
 python3 "$HERE/tools/make-icon.py" "$APP/Contents/Resources/icon.icns"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
