@@ -1,17 +1,25 @@
 # Amber Protocol
 
+<p align="center">
+  <a href="https://raajasw.github.io/amber-protocol/">
+    <img src="assets/play.svg" alt="Play Amber Protocol" width="330" height="64">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://raajasw.github.io/amber-protocol/"><code>raajasw.github.io/amber-protocol</code></a>
+</p>
+
 A twelve-minute cognitive warm-up for the hour when you are too drowsy to code
 but not ready to stop.
 
 Relaxing games make drowsiness worse — a soothing puzzle at three in the
 afternoon puts you to sleep. What actually clears sleep inertia is *effortful*
 thinking wrapped in a calm nervous system. So a session alternates: a block of
-hard cognitive work, then box breathing to bring arousal back down before the
+hard cognitive work, then paced breathing to bring arousal back down before the
 next one. That is the whole design.
 
 Single HTML file, no build step, no dependencies beyond two Google Fonts.
-
-**Play it: https://raajasw.github.io/amber-protocol/**
 
 ## The tasks
 
@@ -26,6 +34,41 @@ adapts to your accuracy so it sits just past comfortable.
 | 05 | **Mental rotation** | Spatial reasoning — the same figure turned, or its mirror? |
 | 06 | **N-back** | Working memory — press on a match N places back |
 | 07 | **Operator chain** | Numeric fluency — hold a running total under load |
+
+### Stroop
+
+<p align="center">
+  <img src="assets/stroop.png" width="760"
+       alt="A Stroop trial: the word RED printed in green, above four labelled colour swatches and a countdown bar">
+</p>
+
+The word says RED, the ink is green, so the answer is **3**. The bar under the
+word is the time left on this trial — it opens at four seconds and tightens only
+after five correct in a row. The rail reads *warming up* until there are enough
+responses to take a median.
+
+### Mental rotation
+
+<p align="center">
+  <img src="assets/rotation.png" width="760"
+       alt="A mental rotation trial: two five-cell figures side by side, labelled Reference and Probe, with Same figure and Mirrored buttons">
+</p>
+
+Is the probe the reference *turned*, or *flipped*? Figures are generated as
+self-avoiding lattice walks and checked for genuine chirality, so no silhouette
+shortcut works. Eleven seconds a trial: this one is not a speed test.
+
+### Operator chain
+
+<p align="center">
+  <img src="assets/chain.png" width="760"
+       alt="An operator chain trial: a large question mark above a numeric input, with three step markers filled">
+</p>
+
+A start value and then each operator arrive one at a time; you type what you are
+left with. Note the rail — **771 ms, down 240** on the opening third. That figure
+is the point of the whole session: it is the one measure here with a defensible
+basis, and it says whether you actually woke up.
 
 Blocks 01, 04 and 08 are **Downshift**: paced breathing, four seconds in and
 six out, the only cool-hued screen in the app. That ten-second cycle is six
